@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ARENA-CLANS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                50: '#eaffea',
+                100: '#c2ffc2',
+                400: '#4dff4d',
+                500: '#21ff21', // Neon Green
+                600: '#16cc16', // Darker Green for hover
+                700: '#12a312',
+                900: '#0a5c0a',
+                950: '#000000',
+              },
+              dark: {
+                800: '#262626', // Neutral 800
+                900: '#171717', // Neutral 900
+                950: '#000000', // Pure Black
+              }
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            }
+          }
+        }
+      }
+  </script>
+  <style>
+    body,
+    html,
+    #root {
+      width: 100%;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      background-color: #050505;
+      color: #f8fafc;
+
+
+    }
+
+    /* Modern E-sports 3D Gamer Background */
+    .app-background {
+      width: 100%;
+      min-height: 100vh;
+      background-color: #050505;
+      background-image:
+        /* Layer 1: Hexagon Wireframe Pattern (Simulated 3D) */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='98' viewBox='0 0 56 98'%3E%3Cpath d='M28 66L0 50L0 16L28 0L56 16L56 50L28 66L28 100' fill='none' stroke='%2321ff21' stroke-width='1' stroke-opacity='0.15'/%3E%3Cpath d='M28 0L28 33L0 49L0 83L28 100L56 83L56 49L28 33' fill='none' stroke='%2321ff21' stroke-width='1.5' stroke-opacity='0.05'/%3E%3C/svg%3E"),
+        /* Layer 2: Bottom Neon Green Glow */
+        radial-gradient(circle at 50% 100%, rgba(33, 255, 33, 0.25) 0%, rgba(5, 5, 5, 0) 60%),
+        /* Layer 3: Main Dark Gradient Depth */
+        linear-gradient(180deg, #050505 0%, #0b0f29 100%);
+      background-attachment: fixed;
+      background-position: center top;
+      background-repeat: repeat, no-repeat, no-repeat;
+      /* Enhance contrast for the neon */
+      background-blend-mode: screen, normal, normal;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #050505;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #262626;
+      border-radius: 4px;
+      border: 1px solid #000;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #21ff21;
+    }
+
+    /* Fundo neon especial para a página de login */
+    .login-screen {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at center, rgba(33, 255, 33, 0.25), rgba(0, 0, 0, 0.9) 70%);
+      z-index: -1;
+      filter: brightness(1.2);
+    }
+
+    /* Grid neon leve (sem SVG, sem imagens) */
+    .login-screen::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(33, 255, 33, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(33, 255, 33, 0.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    /* Glow neon pulsante atrás do logo (Login) */
+    .login-logo-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+
+    .login-logo-neon {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(33, 255, 33, 0.6), rgba(33, 255, 33, 0.1), transparent 70%);
+      filter: blur(18px);
+      animation: neonPulse 2.8s ease-in-out infinite;
+      z-index: -1;
+    }
+
+    @keyframes neonPulse {
+      0% {
+        opacity: 0.4;
+        transform: scale(0.92);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1.05);
+      }
+
+      100% {
+        opacity: 0.4;
+        transform: scale(0.92);
+      }
+    }
+  </style>
+  
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
+</html>
