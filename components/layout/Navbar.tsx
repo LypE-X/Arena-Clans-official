@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 import { Notification, User } from '../../types';
 import * as db from '../../services/dbService';
@@ -62,7 +62,7 @@ const Navbar = ({
     <nav className="sticky top-0 z-50 border-b border-dark-800 bg-dark-950/80 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-visible">
         <div className="flex justify-between h-16 items-center">
-          <Link to="/" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <img
               src="https://i.imgur.com/N2ONXvq.png"
               alt="Arena Clans Logo"
@@ -74,7 +74,7 @@ const Navbar = ({
           </Link>
           <div className="flex items-center gap-4">
             <Link
-              to="/"
+              href="/"
               className="flex items-center text-sm font-medium text-gray-300 hover:text-white transition-colors"
             >
               <svg
@@ -94,7 +94,7 @@ const Navbar = ({
             </Link>
             {user.teamId ? (
               <Link
-                to="/my-team"
+                href="/my-team"
                 className="flex items-center text-sm font-medium text-gray-300 hover:text-white transition-colors"
               >
                 <svg
@@ -113,7 +113,7 @@ const Navbar = ({
                 <span className="hidden sm:inline">Minha Equipe</span>
               </Link>
             ) : (
-              <Link to="/create-team" className="text-sm text-[#21ff21] hover:text-[#16cc16]">
+              <Link href="/create-team" className="text-sm text-[#21ff21] hover:text-[#16cc16]">
                 Criar Equipe
               </Link>
             )}

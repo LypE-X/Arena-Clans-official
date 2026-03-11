@@ -1,0 +1,3 @@
+module.exports=[92866,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(53438);a.n(d("[project]/Desktop/dev/Arena-Clans/node_modules/next/dist/client/components/builtin/global-error.js <module evaluation>"))},86198,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(53438);a.n(d("[project]/Desktop/dev/Arena-Clans/node_modules/next/dist/client/components/builtin/global-error.js"))},48578,a=>{"use strict";a.i(92866);var b=a.i(86198);a.n(b)}];
+
+//# sourceMappingURL=cbbd7_next_dist_client_components_builtin_global-error_6eb99076.js.map
