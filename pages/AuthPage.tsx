@@ -1,0 +1,152 @@
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+
+import { User } from '../types';
+import * as db from '../services/dbService';
+import Card from '../components/ui/Card';
+import Input from '../components/ui/Input';
+import Button from '../components/ui/Button';
+
+const AuthPage = ({ type, setUser }: { type: 'login' | 'register'; setUser: (u: User) => void }) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    cpf: '',
+    phone: '',
+    city: '',
+    state: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      let user;
+      if (type === 'login') {
+        user = await db.loginUser(formData.email, formData.password);
+      } else {
+        // Basic validation
+        if (!formData.name || !formData.cpf || !formData.phone) throw new Error('Preencha todos os campos obrigatórios.');
+        user = await db.registerUser(formData);
+      }
+      setUser(user);
+      navigate('/');
+    } catch (err: any) {
+      setError(err.message || 'Ocorreu um erro.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center p-4">
+      {/* Logo Imgur Image with Extracted ID */}
+      <div className="relative flex items-center justify-center mb-6">
+        {/* Glow neon atrás do logo */}
+        <div className="absolute w-40 h-40 rounded-full bg-[#21ff21]/30 blur-2xl animate-pulse"></div>
+
+        {/* Logo */}
+        <img
+          src="https://i.imgur.com/N2ONXvq.png"
+          alt="Arena Clans Logo"
+          className="w-32 md:w-40 relative z-10 drop-shadow-[0_0_25px_#21ff21]"
+        />
+      </div>
+
+      <Card className="w-full max-w-md border-dark-700 bg-dark-900 shadow-2xl">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-white">{type === 'login' ? 'Entrar na Arena' : 'Crie sua conta'}</h2>
+          <p className="text-gray-400 text-sm mt-1">
+            {type === 'login' ? 'Acesse para gerenciar sua equipe' : 'Conecte-se aos melhores times'}
+          </p>
+        </div>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-900/20 border border-red-900 rounded text-red-200 text-sm">{error}</div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {type === 'register' && (
+            <>
+              <Input
+                label="Nome Completo"
+                placeholder="Seu nome real"
+                value={formData.name}
+                onChange={(e: any) => setFormData({ ...formData, name: e.target.value })}
+                required
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  label="CPF"
+                  placeholder="000.000.000-00"
+                  value={formData.cpf}
+                  onChange={(e: any) => setFormData({ ...formData, cpf: e.target.value })}
+                  required
+                />
+                <Input
+                  label="WhatsApp"
+                  placeholder="(00) 00000-0000"
+                  value={formData.phone}
+                  onChange={(e: any) => setFormData({ ...formData, phone: e.target.value })}
+                  required
+                />
+              </div>
+            </>
+          )}
+          <Input
+            label="E-mail"
+            type="email"
+            placeholder="seu@email.com"
+            value={formData.email}
+            onChange={(e: any) => setFormData({ ...formData, email: e.target.value })}
+            required
+          />
+          <Input
+            label="Senha"
+            type="password"
+            placeholder="••••••••"
+            value={formData.password}
+            onChange={(e: any) => setFormData({ ...formData, password: e.target.value })}
+            required
+          />
+
+          <Button
+            type="submit"
+            className="w-full !bg-[#21ff21] hover:!bg-[#16cc16] !text-black !shadow-[#21ff21]/50 !border-none text-black"
+            disabled={loading}
+          >
+            {loading ? 'Processando...' : type === 'login' ? 'Entrar' : 'Cadastrar'}
+          </Button>
+        </form>
+
+        <div className="mt-6 text-center text-sm text-gray-400">
+          {type === 'login' ? (
+            <>
+              Não tem conta?{' '}
+              <Link to="/register" className="text-[#21ff21] hover:underline font-medium">
+                Cadastre-se
+              </Link>
+            </>
+          ) : (
+            <>
+              Já tem conta?{' '}
+              <Link to="/login" className="text-[#21ff21] hover:underline font-medium">
+                Faça login
+              </Link>
+            </>
+          )}
+        </div>
+      </Card>
+
+      <p className="mt-8 text-xs text-gray-600">MVP Demo • ARENA-CLANS</p>
+    </div>
+  );
+};
+
+export default AuthPage;
+
