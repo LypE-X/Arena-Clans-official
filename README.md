@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="public/logo.png" width="900"/>
+
 # 🎮 Arena Clans
 
 Plataforma para equipes competitivas encontrarem **scrims**, se conectarem e avaliarem adversários.
