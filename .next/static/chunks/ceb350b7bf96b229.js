@@ -1,1 +1,0 @@
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,4629,e=>{"use strict";var t=e.i(51919),u=e.i(6594),l=e.i(95001);e.s(["default",0,()=>{let{user:e}=(0,l.useAppContext)(),a=(0,u.useRouter)();return t.default.useEffect(()=>{e?e.teamId?a.replace(`/team/${e.teamId}`):a.replace("/"):a.push("/")},[e,a]),null}])}]);
