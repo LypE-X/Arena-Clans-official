@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import Image from "next/image"
 
 import { Notification, User } from '../../types';
 import * as db from '../../services/dbService';
 import { Icons } from '../ui/Icons';
+
 
 const Navbar = ({
   user,
@@ -61,14 +63,17 @@ const Navbar = ({
   return (
     <nav className="sticky top-0 z-50 border-b border-dark-800 bg-dark-950/80 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-visible">
-        <div className="flex justify-between h-16 items-center">
-          <Link href="/" className="flex items-center gap-2">
-            <img
-              src="https://i.imgur.com/N2ONXvq.png"
+        <div className="flex justify-between h-20 items-center">
+          <Link href="/" className="flex items-center gap-3 group">
+            <Image
+              src="/logo.png"
               alt="Arena Clans Logo"
-              className="w-10 h-10 object-contain"
+              width={64}
+              height={64}
+              className="object-contain drop-shadow-[0_0_6px_#21ff21] transition-all duration-300 group-hover:drop-shadow-[0_0_12px_#21ff21]"
             />
-            <span className="font-bold text-xl tracking-tight text-white">
+
+            <span className="font-bold text-xl tracking-tight text-white transition-colors duration-300 group-hover:text-[#21ff21]">
               ARENA-<span className="text-[#21ff21]">CLANS</span>
             </span>
           </Link>
@@ -144,9 +149,8 @@ const Navbar = ({
                         <div
                           key={n.id}
                           onClick={() => handleNotificationClick(n)}
-                          className={`p-3 border-b border-dark-800 hover:bg-dark-800/50 cursor-pointer transition-colors ${
-                            !n.read ? 'bg-dark-800/30' : ''
-                          }`}
+                          className={`p-3 border-b border-dark-800 hover:bg-dark-800/50 cursor-pointer transition-colors ${!n.read ? 'bg-dark-800/30' : ''
+                            }`}
                         >
                           <div className="flex justify-between items-start mb-1">
                             <span className="text-sm font-semibold text-white">{n.title}</span>

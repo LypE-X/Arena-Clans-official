@@ -10,6 +10,7 @@ import Card from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import { useAppContext } from '../../components/layout/AppShell';
+import Image from "next/image"
 
 const AuthPage = () => {
   const searchParams = useSearchParams();
@@ -55,10 +56,12 @@ const AuthPage = () => {
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
       <div className="relative flex items-center justify-center mb-6">
         <div className="absolute w-40 h-40 rounded-full bg-[#21ff21]/30 blur-2xl animate-pulse"></div>
-        <img
-          src="https://i.imgur.com/N2ONXvq.png"
+        <Image
+          src="/logo.png"
           alt="Arena Clans Logo"
-          className="w-32 md:w-40 relative z-10 drop-shadow-[0_0_25px_#21ff21]"
+          width={160}
+          height={160}
+          className="relative z-10 drop-shadow-[0_0_25px_#21ff21]"
         />
       </div>
 
