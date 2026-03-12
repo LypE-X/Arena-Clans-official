@@ -61,7 +61,7 @@ const Navbar = ({
   if (!user) return null; // Hide Navbar if not logged in
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-dark-800 bg-dark-950/80 backdrop-blur-md">
+    <nav className="sticky top-0 z-50 border-b border-[#21ff21]/20 bg-black/70 backdrop-blur-xl shadow-[0_0_20px_rgba(33,255,33,0.08)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-visible">
         <div className="flex justify-between h-20 items-center">
           <Link href="/" className="flex items-center gap-3 group">
