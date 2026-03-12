@@ -66,12 +66,10 @@ export interface TeamMessage {
 export interface Notification {
   id: string;
   userId: string;
-  type: "message" | "info";
+  type: "message" | "info" | "success" | "warning";
   relatedTeamId?: string;
   title: string;
   message: string;
   read: boolean;
   timestamp: string;
-  type: 'info' | 'success' | 'warning' | 'message';
-  relatedTeamId?: string; // ID of the team to open chat with
 }
