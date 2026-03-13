@@ -162,69 +162,99 @@ export const verifyCode = async (uid: string, inputCode: string): Promise<boolea
 // --- Team Services ---
 
 export const createTeam = async (user: User, data: Partial<Team>): Promise<Team> => {
-  await delay(1000);
-  const teams = getStorage<Team>(STORAGE_KEYS.TEAMS);
 
-  if (teams.some(t => t.name.toLowerCase() === data.name?.toLowerCase())) {
-    throw new Error("Nome da equipe já existe.");
-  }
+  const { data: team, error } = await supabase
+    .from("teams")
+    .insert({
+      owner_uid: user.uid,
+      name: data.name,
+      game: data.game,
+      country: data.region?.country,
+      state: data.region?.state,
+      city: data.region?.city,
+      description: data.description,
+      photo_url: data.photoUrl
+    })
+    .select()
+    .single();
 
-  const newTeam: Team = {
-    id: crypto.randomUUID(),
-    ownerUid: user.uid,
-    name: data.name!,
-    game: data.game as GameType,
-    region: data.region!,
-    description: data.description || "",
-    photoUrl: data.photoUrl || `https://picsum.photos/seed/${data.name}/200`,
-    rating: 0,
-    totalReviews: 0,
+  if (error) throw new Error(error.message);
+
+  // Atualiza o usuário com o team_id
+  await supabase
+    .from("users")
+    .update({ team_id: team.id })
+    .eq("uid", user.uid);
+
+  return {
+    id: team.id,
+    ownerUid: team.owner_uid,
+    name: team.name,
+    game: team.game,
+    region: {
+      country: team.country,
+      state: team.state,
+      city: team.city
+    },
+    description: team.description,
+    photoUrl: team.photo_url,
+    rating: team.rating,
+    totalReviews: team.total_reviews
   };
-
-  teams.push(newTeam);
-  setStorage(STORAGE_KEYS.TEAMS, teams);
-
-  const users = getStorage<User & { password: string }>(STORAGE_KEYS.USERS);
-  const uIdx = users.findIndex(u => u.uid === user.uid);
-
-  if (uIdx >= 0) {
-    users[uIdx].teamId = newTeam.id;
-    setStorage(STORAGE_KEYS.USERS, users);
-
-    const session = await getCurrentUser();
-
-    if (session) {
-      session.teamId = newTeam.id;
-      localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
-    }
-  }
-
-  return newTeam;
 };
 
 
-export const updateTeam = async (teamId: string, updates: Partial<Team>): Promise<Team> => {
-  await delay(800);
-  const teams = getStorage<Team>(STORAGE_KEYS.TEAMS);
-  const index = teams.findIndex(t => t.id === teamId);
+export const updateTeam = async (
+  teamId: string,
+  updates: Partial<Team>
+): Promise<Team> => {
 
-  if (index === -1) {
-    throw new Error("Equipe não encontrada.");
-  }
+  // verifica se já existe outro time com o mesmo nome
+  if (updates.name) {
+    const { data: existing } = await supabase
+      .from("teams")
+      .select("id")
+      .eq("name", updates.name)
+      .neq("id", teamId)
+      .maybeSingle();
 
-  // Merge updates
-  const updatedTeam = { ...teams[index], ...updates };
-
-  // Basic validation if name changed
-  if (updates.name && updates.name !== teams[index].name) {
-    if (teams.some(t => t.id !== teamId && t.name.toLowerCase() === updates.name?.toLowerCase())) {
+    if (existing) {
       throw new Error("Nome da equipe já existe.");
     }
   }
 
-  teams[index] = updatedTeam;
-  setStorage(STORAGE_KEYS.TEAMS, teams);
-  return updatedTeam;
+  const { data, error } = await supabase
+    .from("teams")
+    .update({
+      name: updates.name,
+      game: updates.game,
+      country: updates.region?.country,
+      state: updates.region?.state,
+      city: updates.region?.city,
+      description: updates.description,
+      photo_url: updates.photoUrl
+    })
+    .eq("id", teamId)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return {
+    id: data.id,
+    ownerUid: data.owner_uid,
+    name: data.name,
+    game: data.game,
+    region: {
+      country: data.country,
+      state: data.state,
+      city: data.city
+    },
+    description: data.description,
+    photoUrl: data.photo_url,
+    rating: data.rating,
+    totalReviews: data.total_reviews
+  };
 };
 
 export interface TeamFilters {
@@ -233,34 +263,58 @@ export interface TeamFilters {
   minRating?: number;
 }
 
-export const getTeams = async (filters: TeamFilters = {}): Promise<Team[]> => {
-  await delay(600);
-  let teams = getStorage<Team>(STORAGE_KEYS.TEAMS);
+export const getTeams = async (): Promise<Team[]> => {
 
-  // Filter by Game
-  if (filters.game && filters.game !== 'ALL') {
-    teams = teams.filter(t => t.game === filters.game);
-  }
+  const { data, error } = await supabase
+    .from("teams")
+    .select("*");
 
-  // Filter by Region (State) - Partial match, case insensitive
-  if (filters.state && filters.state.trim() !== '') {
-    const searchState = filters.state.toLowerCase();
-    teams = teams.filter(t => t.region.state.toLowerCase().includes(searchState));
-  }
+  if (error) throw new Error(error.message);
 
-  // Filter by Minimum Rating
-  if (filters.minRating && filters.minRating > 0) {
-    teams = teams.filter(t => t.rating >= filters.minRating!);
-  }
-
-  return teams;
+  return data.map(team => ({
+    id: team.id,
+    ownerUid: team.owner_uid,
+    name: team.name,
+    game: team.game,
+    region: {
+      country: team.country,
+      state: team.state,
+      city: team.city
+    },
+    description: team.description,
+    photoUrl: team.photo_url,
+    rating: team.rating,
+    totalReviews: team.total_reviews
+  }));
 };
 
-export const getTeamById = async (id: string): Promise<Team | undefined> => {
-  await delay(400);
-  const teams = getStorage<Team>(STORAGE_KEYS.TEAMS);
-  return teams.find(t => t.id === id);
+export const getTeamById = async (id: string): Promise<Team | null> => {
+
+  const { data, error } = await supabase
+    .from("teams")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return {
+    id: data.id,
+    ownerUid: data.owner_uid,
+    name: data.name,
+    game: data.game,
+    region: {
+      country: data.country,
+      state: data.state,
+      city: data.city
+    },
+    description: data.description,
+    photoUrl: data.photo_url,
+    rating: data.rating,
+    totalReviews: data.total_reviews
+  };
 };
+
 
 // --- Reviews ---
 
