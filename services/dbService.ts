@@ -318,54 +318,98 @@ export const getTeamById = async (id: string): Promise<Team | null> => {
 
 // --- Reviews ---
 
-export const addReview = async (review: Omit<Review, 'id' | 'timestamp' | 'average'>) => {
-  await delay(500);
+export const addReview = async (
+  review: Omit<Review, "id" | "timestamp" | "average">
+) => {
 
-  const reviews = getStorage<Review>(STORAGE_KEYS.REVIEWS);
+  const average =
+    (review.boaConduta +
+      review.comunicacao +
+      review.pontualidade) / 3;
 
-  const existingIndex = reviews.findIndex(
-    r => r.targetTeamId === review.targetTeamId && r.authorTeamId === review.authorTeamId
-  );
+  // 🔎 procurar review existente
+  const { data: existingReviews, error: searchError } = await supabase
+    .from("reviews")
+    .select("*")
+    .eq("target_team_id", review.targetTeamId)
+    .eq("author_team_id", review.authorTeamId);
 
-  const average = (review.boaConduta + review.comunicacao + review.pontualidade) / 3;
+  if (searchError) throw new Error(searchError.message);
 
-  const newReview: Review = {
-    ...review,
-    id: existingIndex >= 0 ? reviews[existingIndex].id : crypto.randomUUID(),
-    timestamp: new Date().toISOString(),
-    average,
-  };
+  const existing = existingReviews?.[0];
 
-  if (existingIndex >= 0) {
-    reviews[existingIndex] = newReview;
+  let data;
+  let error;
+
+  if (existing) {
+
+    // ✏️ UPDATE
+    const res = await supabase
+      .from("reviews")
+      .update({
+        boa_conduta: review.boaConduta,
+        comunicacao: review.comunicacao,
+        pontualidade: review.pontualidade,
+        average,
+        comment: review.comment,
+      })
+      .eq("id", existing.id)
+      .select()
+      .maybeSingle();
+
+    data = res.data;
+    error = res.error;
+
   } else {
-    reviews.push(newReview);
+
+    // ➕ INSERT
+    const res = await supabase
+      .from("reviews")
+      .insert({
+        target_team_id: review.targetTeamId,
+        author_team_id: review.authorTeamId,
+        author_team_name: review.authorTeamName,
+        boa_conduta: review.boaConduta,
+        comunicacao: review.comunicacao,
+        pontualidade: review.pontualidade,
+        average,
+        comment: review.comment
+      })
+      .select()
+      .single();
+
+    data = res.data;
+    error = res.error;
+
   }
 
-  setStorage(STORAGE_KEYS.REVIEWS, reviews);
+  if (error) throw new Error(error.message);
 
-  // Update team rating
-  const teams = getStorage<Team>(STORAGE_KEYS.TEAMS);
-  const teamIndex = teams.findIndex(t => t.id === review.targetTeamId);
-
-  if (teamIndex >= 0) {
-    const teamReviews = reviews.filter(r => r.targetTeamId === review.targetTeamId);
-    const avgTeam = teamReviews.reduce((acc, r) => acc + r.average, 0) / teamReviews.length;
-
-    teams[teamIndex].rating = parseFloat(avgTeam.toFixed(1));
-    teams[teamIndex].totalReviews = teamReviews.length;
-
-    setStorage(STORAGE_KEYS.TEAMS, teams);
-  }
-
-  return newReview; // <-- AGORA SIM
+  return data;
 };
 
 export const getReviews = async (teamId: string) => {
-  const reviews = getStorage<Review>(STORAGE_KEYS.REVIEWS);
-  return reviews
-    .filter(r => r.targetTeamId === teamId)
-    .sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("*")
+    .eq("target_team_id", teamId)
+    .order("timestamp", { ascending: false });
+
+  if (error) throw new Error(error.message);
+
+  return data.map(r => ({
+    id: r.id,
+    targetTeamId: r.target_team_id,
+    authorTeamId: r.author_team_id,
+    authorTeamName: r.author_team_name,
+    boaConduta: r.boa_conduta,
+    comunicacao: r.comunicacao,
+    pontualidade: r.pontualidade,
+    average: r.average,
+    comment: r.comment,
+    timestamp: r.timestamp
+  }));
 };
 
 // --- Video Upload ---

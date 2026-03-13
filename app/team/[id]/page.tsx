@@ -42,6 +42,9 @@ const TeamProfilePage = () => {
   const refreshTeamData = async () => {
     if (!id) return;
 
+    // esperar o trigger do supabase terminar
+    await new Promise(r => setTimeout(r, 300));
+
     const t = await db.getTeamById(id as string);
     setTeam(t || null);
 
@@ -102,7 +105,7 @@ const TeamProfilePage = () => {
                 {team.region.state} - {team.region.city}
               </Badge>
               <div className="flex items-center gap-1 text-[#21ff21]">
-                <Icons.Star fill /> <span className="font-bold text-yellow-400">{team.rating}</span>
+                <Icons.Star fill /> <span className="font-bold text-yellow-400">{Number(team.rating).toFixed(1)}</span>
               </div>
             </div>
             <p className="text-gray-300 max-w-2xl">{team.description}</p>
@@ -191,7 +194,7 @@ const TeamProfilePage = () => {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-white">Reputação</h2>
               <div className="flex items-center gap-3">
-                <span className="text-4xl font-bold text-[#21ff21]">{team.rating}</span>
+                <span className="text-4xl font-bold text-[#21ff21]"> {Number(team.rating).toFixed(1)}</span>
                 <div className="flex flex-col items-end">
                   <div className="flex text-yellow-400 text-sm">⭐⭐⭐⭐⭐</div>
                   <span className="text-xs text-gray-400">{reviews.length} avaliações</span>
