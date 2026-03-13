@@ -1,5 +1,7 @@
-import { User, Team, GameType, Review, VideoEvidence, Notification, TeamMessage } from '../types';
 
+//**
+import { User, Team, GameType, Review, VideoEvidence, Notification, TeamMessage } from '../types';
+import { supabase } from "./supabaseClient";
 /**
  * MOCK DATABASE SERVICE
  * 
@@ -31,53 +33,100 @@ const setStorage = <T>(key: string, data: T[]) => {
   localStorage.setItem(key, JSON.stringify(data));
 };
 
-// --- Auth Services ---
+// --- Auth Services (Supabase) ---
 
 export const loginUser = async (email: string, password: string): Promise<User> => {
-  await delay(800);
-  const users = getStorage<User & { password: string }>(STORAGE_KEYS.USERS);
-  const user = users.find(u => u.email === email && u.password === password);
 
-  if (!user) throw new Error("Credenciais inválidas.");
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  });
 
-  const { password: _, ...safeUser } = user;
-  localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(safeUser));
-  return safeUser;
+  if (error) throw new Error(error.message);
+
+  const uid = data.user.id;
+
+  const { data: userData, error: dbError } = await supabase
+    .from("users")
+    .select("*")
+    .eq("uid", uid)
+    .single();
+
+  if (dbError) throw new Error(dbError.message);
+
+  return {
+    uid: userData.uid,
+    name: userData.name,
+    email: userData.email,
+    cpf: userData.cpf,
+    phone: userData.phone,
+    phoneVerified: userData.phone_verified,
+    teamId: userData.team_id
+  };
 };
 
 export const registerUser = async (data: any): Promise<User> => {
-  await delay(1200);
-  const users = getStorage<User & { password: string }>(STORAGE_KEYS.USERS);
 
-  // Uniqueness checks
-  if (users.some(u => u.email === data.email)) throw new Error("E-mail já cadastrado.");
-  if (users.some(u => u.cpf === data.cpf)) throw new Error("CPF já cadastrado.");
+  const { data: authData, error } = await supabase.auth.signUp({
+    email: data.email,
+    password: data.password
+  });
 
-  const newUser: User & { password: string } = {
-    uid: crypto.randomUUID(),
+  if (error) throw new Error(error.message);
+
+  const uid = authData.user?.id;
+
+  if (!uid) throw new Error("Erro ao criar usuário");
+
+  // ATUALIZA A TABELA USERS
+  const { error: updateError } = await supabase
+    .from("users")
+    .update({
+      name: data.name,
+      cpf: data.cpf,
+      phone: data.phone
+    })
+    .eq("uid", uid);
+
+  if (updateError) throw new Error(updateError.message);
+
+  return {
+    uid,
     name: data.name,
     email: data.email,
     cpf: data.cpf,
     phone: data.phone,
-    phoneVerified: false,
-    password: data.password, // In real backend, verify hash
+    phoneVerified: false
   };
-
-  users.push(newUser);
-  setStorage(STORAGE_KEYS.USERS, users);
-
-  const { password: _, ...safeUser } = newUser;
-  localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(safeUser));
-  return safeUser;
 };
 
 export const logoutUser = async () => {
-  localStorage.removeItem(STORAGE_KEYS.SESSION);
+  await supabase.auth.signOut();
 };
 
-export const getCurrentUser = (): User | null => {
-  const session = localStorage.getItem(STORAGE_KEYS.SESSION);
-  return session ? JSON.parse(session) : null;
+export const getCurrentUser = async (): Promise<User | null> => {
+
+  const { data } = await supabase.auth.getUser();
+
+  if (!data.user) return null;
+
+  const { data: userData } = await supabase
+    .from("users")
+    .select("*")
+    .eq("uid", data.user.id)
+    .single();
+
+  if (!userData) return null;
+
+  return {
+    uid: userData.uid,
+    name: userData.name,
+    email: userData.email,
+    cpf: userData.cpf,
+    phone: userData.phone,
+    phoneVerified: userData.phone_verified,
+    teamId: userData.team_id
+  };
 };
 
 // --- Phone Verification (WhatsApp Mock) ---
@@ -99,16 +148,16 @@ export const verifyCode = async (uid: string, inputCode: string): Promise<boolea
       setStorage(STORAGE_KEYS.USERS, users);
 
       // Update session
-      const session = getCurrentUser();
+      const session = await getCurrentUser();
       if (session) {
         session.phoneVerified = true;
-        localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
       }
+      localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
     }
-    return true;
   }
-  return false;
-};
+  return true;
+}
+
 
 // --- Team Services ---
 
@@ -135,15 +184,15 @@ export const createTeam = async (user: User, data: Partial<Team>): Promise<Team>
   teams.push(newTeam);
   setStorage(STORAGE_KEYS.TEAMS, teams);
 
-  // Link team to user
   const users = getStorage<User & { password: string }>(STORAGE_KEYS.USERS);
   const uIdx = users.findIndex(u => u.uid === user.uid);
+
   if (uIdx >= 0) {
     users[uIdx].teamId = newTeam.id;
     setStorage(STORAGE_KEYS.USERS, users);
 
-    // Update session
-    const session = getCurrentUser();
+    const session = await getCurrentUser();
+
     if (session) {
       session.teamId = newTeam.id;
       localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
@@ -152,6 +201,7 @@ export const createTeam = async (user: User, data: Partial<Team>): Promise<Team>
 
   return newTeam;
 };
+
 
 export const updateTeam = async (teamId: string, updates: Partial<Team>): Promise<Team> => {
   await delay(800);
