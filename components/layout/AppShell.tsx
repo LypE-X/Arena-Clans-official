@@ -51,26 +51,6 @@ export default function AppShell({ children }: AppShellProps) {
   };
 
   useEffect(() => {
-
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      async (_, session) => {
-
-        if (session?.user) {
-          const user = await db.getCurrentUser();
-          setUser(user);
-        } else {
-          setUser(null);
-        }
-
-        setLoading(false);
-      }
-    );
-
-    return () => listener.subscription.unsubscribe();
-
-  }, []);
-
-  useEffect(() => {
     if (!user) return;
 
     const key = `welcomeSeen_${user.uid}`;
@@ -81,6 +61,7 @@ export default function AppShell({ children }: AppShellProps) {
     }
   }, [user]);
 
+  // 1️⃣ carregar sessão inicial
   useEffect(() => {
     const loadUser = async () => {
       const user = await db.getCurrentUser();
@@ -90,6 +71,8 @@ export default function AppShell({ children }: AppShellProps) {
 
     loadUser();
   }, []);
+
+
 
   const openChat = async (teamId: string) => {
     if (!user || !user.teamId) return;
