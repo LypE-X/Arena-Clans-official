@@ -9,6 +9,7 @@ import * as db from '../../services/dbService';
 import Navbar from './Navbar';
 import ChatModal from '../modals/ChatModal';
 import WelcomeModal from '../modals/WelcomeModal';
+import { supabase } from '../../services/supabaseClient';
 
 type AppContextValue = {
   user: User | null;
@@ -43,6 +44,8 @@ export default function AppShell({ children }: AppShellProps) {
 
   const router = useRouter();
 
+
+
   const refreshNotifications = () => {
     setNotificationVersion((v) => v + 1);
   };
@@ -58,11 +61,18 @@ export default function AppShell({ children }: AppShellProps) {
     }
   }, [user]);
 
+  // 1️⃣ carregar sessão inicial
   useEffect(() => {
-    db.logoutUser();
-    setUser(null);
-    setLoading(false);
+    const loadUser = async () => {
+      const user = await db.getCurrentUser();
+      setUser(user);
+      setLoading(false);
+    };
+
+    loadUser();
   }, []);
+
+
 
   const openChat = async (teamId: string) => {
     if (!user || !user.teamId) return;

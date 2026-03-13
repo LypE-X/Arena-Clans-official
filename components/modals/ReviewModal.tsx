@@ -23,13 +23,34 @@ const ReviewModal = ({
   const [authorTeamName, setAuthorTeamName] = useState('');
 
   // Buscar nome real da equipe avaliadora
+  // Carregar dados da equipe avaliadora + review existente
   useEffect(() => {
     const load = async () => {
+
+      // pegar nome da equipe
       const t = await db.getTeamById(authorTeamId);
       if (t) setAuthorTeamName(t.name);
+
+      // 🔎 buscar reviews da equipe alvo
+      const reviews = await db.getReviews(targetTeam.id);
+
+      // encontrar review feita por esta equipe
+      const existing = reviews.find(
+        r => r.authorTeamId === authorTeamId
+      );
+
+      // se existir, preencher os campos
+      if (existing) {
+        setBoaConduta(existing.boaConduta);
+        setComunicacao(existing.comunicacao);
+        setPontualidade(existing.pontualidade);
+        setComment(existing.comment || "");
+      }
+
     };
+
     load();
-  }, [authorTeamId]);
+  }, [authorTeamId, targetTeam.id]);
 
   if (!open) return null;
 
@@ -51,10 +72,10 @@ const ReviewModal = ({
       comment
     });
 
-    // avisa o TeamProfile para atualizar
-    if (onReviewSubmitted) {
-      await onReviewSubmitted();
-    }
+    // esperar o trigger do supabase atualizar o rating
+    setTimeout(async () => {
+      await onReviewSubmitted?.();
+    }, 400);
 
     onClose();
   };
