@@ -153,7 +153,7 @@ const DashboardPage = () => {
               <Link href={`/team/${team.id}`} className="block h-full">
                 <Card className="h-full hover:border-[#21ff21]/50 transition-colors relative overflow-hidden pb-16">
                   <div className="flex items-start gap-4 mb-4">
-                    <img src={team.photoUrl} alt={team.name} className="w-16 h-16 rounded-lg object-cover bg-dark-900" />
+                    <img src={team.photoUrl || '/logo.png'} alt={team.name} className="w-16 h-16 rounded-lg object-cover bg-dark-900" />
                     <div>
                       <h3 className="font-bold text-lg text-white group-hover:text-[#21ff21] transition-colors">
                         {team.name}

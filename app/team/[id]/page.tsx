@@ -95,7 +95,7 @@ const TeamProfilePage = () => {
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#21ff21] to-[#16cc16]"></div>
         <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
           <img
-            src={team.photoUrl}
+            src={team.photoUrl || '/logo.png'}
             alt={team.name}
             className="w-32 h-32 md:w-36 md:h-36 rounded-xl object-cover border border-[#21ff21] shadow-2xl bg-dark-950"
           />
