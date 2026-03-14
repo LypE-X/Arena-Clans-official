@@ -80,6 +80,8 @@ const TeamProfilePage = () => {
     load();
   }, [id, user, isMyTeam]);
 
+
+
   const total = reviews.length;
   const avgConduta = total ? reviews.reduce((acc, r) => acc + r.boaConduta, 0) / total : 0;
   const avgComunicacao = total ? reviews.reduce((acc, r) => acc + r.comunicacao, 0) / total : 0;
@@ -105,7 +107,11 @@ const TeamProfilePage = () => {
                 {team.region.state} - {team.region.city}
               </Badge>
               <div className="flex items-center gap-1 text-[#21ff21]">
-                <Icons.Star fill /> <span className="font-bold text-yellow-400">{Number(team.rating).toFixed(1)}</span>
+                <Icons.Star fill />
+                <span className="font-bold text-yellow-400">
+                  {/* O "|| 0" garante que se o rating for null/undefined, ele mostre 0.0 */}
+                  {Number(team.rating || 0).toFixed(1)}
+                </span>
               </div>
             </div>
             <p className="text-gray-300 max-w-2xl">{team.description}</p>

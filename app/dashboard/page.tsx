@@ -14,7 +14,7 @@ import { useAppContext } from '../../components/layout/AppShell';
 
 const DashboardPage = () => {
   const { user, openChat } = useAppContext();
-  const [teams, setTeams] = React.useState<Team[]>([]);
+  const [teams, setTeams] = React.useState<any[]>([]);
   const [filterGame, setFilterGame] = React.useState<GameType | 'ALL'>('ALL');
   const [filterState, setFilterState] = React.useState('');
   const [filterRating, setFilterRating] = React.useState(0);
@@ -24,13 +24,19 @@ const DashboardPage = () => {
   React.useEffect(() => {
     const load = async () => {
       setLoading(true);
-      const data = await db.getTeams({
-        game: filterGame === 'ALL' ? undefined : filterGame,
-        state: filterState,
-        minRating: filterRating > 0 ? filterRating : undefined,
-      });
-      setTeams(data);
-      setLoading(false);
+      try {
+        const data = await db.getTeams({
+          game: filterGame === 'ALL' ? undefined : filterGame,
+          state: filterState,
+          minRating: filterRating > 0 ? filterRating : undefined,
+        });
+        // IMPORTANTE: Se 'data' vier vazio, coloca um array []
+        setTeams(data || []);
+      } catch (err) {
+        setTeams([]);
+      } finally {
+        setLoading(false);
+      }
     };
     const timer = setTimeout(load, 300);
     return () => clearTimeout(timer);
@@ -54,9 +60,9 @@ const DashboardPage = () => {
     setFilterRating(0);
   };
 
-  const filteredTeams = teams.filter((team) => {
+  const filteredTeams = (teams || []).filter((team) => {
     if (!searchName) return true;
-    return team.name.toLowerCase().includes(searchName.toLowerCase());
+    return team.name?.toLowerCase().includes(searchName.toLowerCase());
   });
 
   return (
@@ -73,9 +79,8 @@ const DashboardPage = () => {
             <button
               key={g}
               onClick={() => setFilterGame(g)}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                filterGame === g ? 'bg-[#21ff21] text-black shadow' : 'text-gray-400 hover:text-white'
-              }`}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${filterGame === g ? 'bg-[#21ff21] text-black shadow' : 'text-gray-400 hover:text-white'
+                }`}
             >
               {g === 'ALL' ? 'Todos' : g}
             </button>

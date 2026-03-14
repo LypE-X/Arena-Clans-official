@@ -263,15 +263,25 @@ export interface TeamFilters {
   minRating?: number;
 }
 
-export const getTeams = async (): Promise<Team[]> => {
+export const getTeams = async (filters?: { game?: string; state?: string; minRating?: number }): Promise<Team[]> => {
+  let query = supabase.from("teams").select("*");
 
-  const { data, error } = await supabase
-    .from("teams")
-    .select("*");
+  // Aplica os filtros na query do Supabase se eles existirem
+  if (filters?.game) {
+    query = query.eq("game", filters.game);
+  }
+  if (filters?.state) {
+    query = query.eq("state", filters.state);
+  }
+  if (filters?.minRating) {
+    query = query.gte("rating", filters.minRating);
+  }
+
+  const { data, error } = await query;
 
   if (error) throw new Error(error.message);
 
-  return data.map(team => ({
+  return (data || []).map(team => ({
     id: team.id,
     ownerUid: team.owner_uid,
     name: team.name,
@@ -283,8 +293,9 @@ export const getTeams = async (): Promise<Team[]> => {
     },
     description: team.description,
     photoUrl: team.photo_url,
-    rating: team.rating,
-    totalReviews: team.total_reviews
+    // Forçamos o Number aqui para garantir que o .toFixed(1) funcione no front
+    rating: Number(team.rating || 0),
+    totalReviews: Number(team.total_reviews || 0)
   }));
 };
 
@@ -310,8 +321,8 @@ export const getTeamById = async (id: string): Promise<Team | null> => {
     },
     description: data.description,
     photoUrl: data.photo_url,
-    rating: data.rating,
-    totalReviews: data.total_reviews
+    rating: Number(data.rating),
+    totalReviews: Number(data.total_reviews)
   };
 };
 
