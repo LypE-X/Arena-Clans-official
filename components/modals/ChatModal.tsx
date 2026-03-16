@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { Team, TeamMessage } from '../../types';
 import * as db from '../../services/dbService';
+import { supabase } from '@/services/supabaseClient';
 import { Icons } from '../ui/Icons';
 
 const ChatModal = ({
@@ -26,44 +27,58 @@ const ChatModal = ({
 
   // Load team + messages
   useEffect(() => {
-    if (!open || !teamId || !userId) return;
-
-    const load = async () => {
-      // 1. Carrega equipe
-      const team = await db.getTeamById(teamId);
-      setOtherTeam(team || null);
-
-      // 2. Carrega mensagens
-      const msgs = await db.getConversation(currentTeamId, teamId);
+    // Ajustado para usar 'open' em vez de 'isOpen'
+    // Ajustado para usar 'currentTeamId' e 'teamId' que você já tem
+    if (!open || !currentTeamId || !teamId) return;
+  
+    const loadMessages = async () => {
+      // Usando 'db.getTeamMessages' para bater com o seu import
+      const msgs = await db.getTeamMessages(currentTeamId, teamId);
       setMessages(msgs);
-
-      // 3. Marca notificações dessa equipe como lidas
-      await db.markMessageNotificationsFromTeamRead(userId, teamId);
-
-      // 4. Atualiza Navbar
-      refreshNotifications();
-
-      // Scroll
-      setTimeout(() => {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
     };
-
-    load();
-  }, [open, teamId, currentTeamId, userId]);
+    loadMessages();
+  
+    const channel = supabase
+      .channel('chat-realtime')
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'team_messages' 
+      }, (payload: any) => { 
+        const newMsg = payload.new;
+        if (
+          (newMsg.from_team_id === currentTeamId && newMsg.to_team_id === teamId) ||
+          (newMsg.from_team_id === teamId && newMsg.to_team_id === currentTeamId)
+        ) {
+          setMessages((current) => [...current, newMsg]);
+        }
+      })
+      .subscribe();
+  
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [open, currentTeamId, teamId]); 
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!text.trim()) return;
 
-    const msg = await db.sendMessage(currentTeamId, teamId, text);
-    setMessages((prev) => [...prev, msg]);
-    setText('');
+    try {
+      // 1. Envia para o banco de dados (o Realtime cuidará de mostrar na tela)
+      await db.sendMessage(currentTeamId, teamId, text);
 
-    // Rola para baixo após enviar
-    setTimeout(() => {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
+      // 2. Limpa o campo de texto
+      setText('');
+
+      // 3. Rola para baixo
+      setTimeout(() => {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } catch (error) {
+      console.error("Erro ao enviar:", error);
+      alert("Não foi possível enviar a mensagem.");
+    }
   };
 
   if (!open || !otherTeam) return null;

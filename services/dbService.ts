@@ -447,6 +447,7 @@ export const getVideos = async (teamId: string): Promise<VideoEvidence[]> => {
   return videos.filter(v => v.teamId === teamId);
 };
 
+
 // --- Notifications ---
 
 export const getNotifications = async (userId: string): Promise<Notification[]> => {
@@ -470,73 +471,21 @@ export const markNotificationRead = async (id: string): Promise<void> => {
   }
 }
 
-// --- Messaging System ---
-
-export const sendMessage = async (fromTeamId: string, toTeamId: string, text: string): Promise<TeamMessage> => {
-  await delay(300);
-  const messages = getStorage<TeamMessage>(STORAGE_KEYS.MESSAGES);
-
-  const newMessage: TeamMessage = {
-    id: crypto.randomUUID(),
-    fromTeamId,
-    toTeamId,
-    text,
-    timestamp: Date.now(),
-    read: false
+  export const getConversation = async (
+    teamAId: string,
+    teamBId: string
+  ): Promise<TeamMessage[]> => {
+    // await delay(200);
+    const messages = getStorage<TeamMessage>(STORAGE_KEYS.MESSAGES);
+  
+    return messages
+      .filter(
+        m =>
+          (m.fromTeamId === teamAId && m.toTeamId === teamBId) ||
+          (m.fromTeamId === teamBId && m.toTeamId === teamAId)
+      )
+      .sort((a, b) => a.timestamp - b.timestamp);
   };
-
-  messages.push(newMessage);
-  setStorage(STORAGE_KEYS.MESSAGES, messages);
-
-  // Create Notification for the receiver team owner
-  const teams = getStorage<Team>(STORAGE_KEYS.TEAMS);
-  const fromTeam = teams.find(t => t.id === fromTeamId);
-  const toTeam = teams.find(t => t.id === toTeamId);
-
-  if (toTeam && fromTeam) {
-    const notifications = getStorage<Notification>(STORAGE_KEYS.NOTIFICATIONS);
-
-    // 🔹 verifica se já existe notificação NÃO lida dessa equipe
-    const existing = notifications.find(
-      n =>
-        n.userId === toTeam.ownerUid &&
-        n.type === 'message' &&
-        n.relatedTeamId === fromTeamId &&
-        !n.read
-    );
-
-    if (existing) {
-      // 🔁 Atualiza a notificação existente (não cria outra)
-      existing.message =
-        text.substring(0, 50) + (text.length > 50 ? "..." : "");
-      existing.timestamp = new Date().toISOString();
-    } else {
-      // ➕ Cria apenas se não existir
-      notifications.push({
-        id: crypto.randomUUID(),
-        userId: toTeam.ownerUid,
-        title: `Nova mensagem de ${fromTeam.name}`,
-        message: text.substring(0, 50) + (text.length > 50 ? "..." : ""),
-        read: false,
-        timestamp: new Date().toISOString(),
-        type: "message",
-        relatedTeamId: fromTeamId
-      });
-    }
-
-    setStorage(STORAGE_KEYS.NOTIFICATIONS, notifications);
-  }
-
-  return newMessage;
-};
-
-export const getConversation = async (teamAId: string, teamBId: string): Promise<TeamMessage[]> => {
-  // await delay(200);
-  const messages = getStorage<TeamMessage>(STORAGE_KEYS.MESSAGES);
-  return messages
-    .filter(m => (m.fromTeamId === teamAId && m.toTeamId === teamBId) || (m.fromTeamId === teamBId && m.toTeamId === teamAId))
-    .sort((a, b) => a.timestamp - b.timestamp);
-};
 
 export const getInbox = async (teamId: string): Promise<{ otherTeam: Team, lastMessage: TeamMessage }[]> => {
   await delay(500);
@@ -660,4 +609,39 @@ export const addReport = async (report: {
   return report;
 };
 
+// Busca as mensagens entre o meu time e o time adversário
+export const getTeamMessages = async (myTeamId: string, otherTeamId: string) => {
+  const { data, error } = await supabase
+    .from('team_messages')
+    .select('*')
+    .or(`and(from_team_id.eq.${myTeamId},to_team_id.eq.${otherTeamId}),and(from_team_id.eq.${otherTeamId},to_team_id.eq.${myTeamId})`)
+    .order('timestamp', { ascending: true }); // Usei 'timestamp' conforme sua imagem
+
+  if (error) {
+    console.error("Erro ao buscar mensagens:", error);
+    return [];
+  }
+  return data;
+};
+
+// Envia uma nova mensagem - BLOCO CORRIGIDO
+export const sendMessage = async (fromId: string, toId: string, text: string) => {
+  const { data, error } = await supabase
+    .from('team_messages')
+    .insert({
+      from_team_id: fromId,
+      to_team_id: toId,
+      text,
+      read: false
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Erro ao enviar mensagem:", error);
+    throw error;
+  }
+
+  return data;
+};
 
