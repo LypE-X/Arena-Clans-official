@@ -1,39 +1,10 @@
-
-//**
-import { User, Team, GameType, Review, VideoEvidence, Notification, TeamMessage } from '../types';
+import { User, Team, Review, TeamMessage } from "../types";
 import { supabase } from "./supabaseClient";
-/**
- * MOCK DATABASE SERVICE
- * 
- * In a real production environment, this file would import `firebase/firestore` or `@supabase/supabase-js`.
- * Here, we simulate async DB calls using LocalStorage to allow the app to be fully functional 
- * as a standalone artifact.
- */
 
-const STORAGE_KEYS = {
-  USERS: 'scrimlink_users',
-  TEAMS: 'scrimlink_teams',
-  REVIEWS: 'scrimlink_reviews',
-  VIDEOS: 'scrimlink_videos',
-  SESSION: 'scrimlink_session',
-  NOTIFICATIONS: 'scrimlink_notifications',
-  MESSAGES: 'scrimlink_messages',
-  REPORTS: 'scrimlink_reports',
-};
 
-// --- Helpers ---
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-const getStorage = <T>(key: string): T[] => {
-  const data = localStorage.getItem(key);
-  return data ? JSON.parse(data) : [];
-};
-
-const setStorage = <T>(key: string, data: T[]) => {
-  localStorage.setItem(key, JSON.stringify(data));
-};
-
-// --- Auth Services (Supabase) ---
+// =============================
+// AUTH
+// =============================
 
 export const loginUser = async (email: string, password: string): Promise<User> => {
 
@@ -65,6 +36,7 @@ export const loginUser = async (email: string, password: string): Promise<User> 
   };
 };
 
+
 export const registerUser = async (data: any): Promise<User> => {
 
   const { data: authData, error } = await supabase.auth.signUp({
@@ -78,7 +50,6 @@ export const registerUser = async (data: any): Promise<User> => {
 
   if (!uid) throw new Error("Erro ao criar usuário");
 
-  // ATUALIZA A TABELA USERS
   const { error: updateError } = await supabase
     .from("users")
     .update({
@@ -100,9 +71,11 @@ export const registerUser = async (data: any): Promise<User> => {
   };
 };
 
+
 export const logoutUser = async () => {
   await supabase.auth.signOut();
 };
+
 
 export const getCurrentUser = async (): Promise<User | null> => {
 
@@ -129,37 +102,10 @@ export const getCurrentUser = async (): Promise<User | null> => {
   };
 };
 
-// --- Phone Verification (WhatsApp Mock) ---
 
-export const sendVerificationCode = async (phone: string): Promise<string> => {
-  await delay(1500);
-  // Implementation: Call Meta API / Twilio here
-  console.log(`[SMS-MOCK] Sending code 1234 to ${phone}`);
-  return "1234"; // Fixed for demo
-};
-
-export const verifyCode = async (uid: string, inputCode: string): Promise<boolean> => {
-  await delay(1000);
-  if (inputCode === "1234") {
-    const users = getStorage<User & { password: string }>(STORAGE_KEYS.USERS);
-    const userIndex = users.findIndex(u => u.uid === uid);
-    if (userIndex >= 0) {
-      users[userIndex].phoneVerified = true;
-      setStorage(STORAGE_KEYS.USERS, users);
-
-      // Update session
-      const session = await getCurrentUser();
-      if (session) {
-        session.phoneVerified = true;
-      }
-      localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
-    }
-  }
-  return true;
-}
-
-
-// --- Team Services ---
+// =============================
+// TEAMS
+// =============================
 
 export const createTeam = async (user: User, data: Partial<Team>): Promise<Team> => {
 
@@ -180,7 +126,6 @@ export const createTeam = async (user: User, data: Partial<Team>): Promise<Team>
 
   if (error) throw new Error(error.message);
 
-  // Atualiza o usuário com o team_id
   await supabase
     .from("users")
     .update({ team_id: team.id })
@@ -198,30 +143,13 @@ export const createTeam = async (user: User, data: Partial<Team>): Promise<Team>
     },
     description: team.description,
     photoUrl: team.photo_url,
-    rating: team.rating,
-    totalReviews: team.total_reviews
+    rating: Number(team.rating || 0),
+    totalReviews: Number(team.total_reviews || 0)
   };
 };
 
 
-export const updateTeam = async (
-  teamId: string,
-  updates: Partial<Team>
-): Promise<Team> => {
-
-  // verifica se já existe outro time com o mesmo nome
-  if (updates.name) {
-    const { data: existing } = await supabase
-      .from("teams")
-      .select("id")
-      .eq("name", updates.name)
-      .neq("id", teamId)
-      .maybeSingle();
-
-    if (existing) {
-      throw new Error("Nome da equipe já existe.");
-    }
-  }
+export const updateTeam = async (teamId: string, updates: Partial<Team>): Promise<Team> => {
 
   const { data, error } = await supabase
     .from("teams")
@@ -252,29 +180,35 @@ export const updateTeam = async (
     },
     description: data.description,
     photoUrl: data.photo_url,
-    rating: data.rating,
-    totalReviews: data.total_reviews
+    rating: Number(data.rating || 0),
+    totalReviews: Number(data.total_reviews || 0)
   };
 };
 
-export interface TeamFilters {
+
+export const getTeams = async (filters?: {
   game?: string;
   state?: string;
   minRating?: number;
-}
+  search?: string;
+}): Promise<Team[]> => {
 
-export const getTeams = async (filters?: { game?: string; state?: string; minRating?: number }): Promise<Team[]> => {
   let query = supabase.from("teams").select("*");
 
-  // Aplica os filtros na query do Supabase se eles existirem
-  if (filters?.game) {
+  if (filters?.game && filters.game !== "Todos") {
     query = query.eq("game", filters.game);
   }
-  if (filters?.state) {
+
+  if (filters?.state && filters.state !== "Todos os Estados") {
     query = query.eq("state", filters.state);
   }
+
   if (filters?.minRating) {
     query = query.gte("rating", filters.minRating);
+  }
+
+  if (filters?.search) {
+    query = query.ilike("name", `%${filters.search}%`);
   }
 
   const { data, error } = await query;
@@ -293,11 +227,11 @@ export const getTeams = async (filters?: { game?: string; state?: string; minRat
     },
     description: team.description,
     photoUrl: team.photo_url,
-    // Forçamos o Number aqui para garantir que o .toFixed(1) funcione no front
     rating: Number(team.rating || 0),
     totalReviews: Number(team.total_reviews || 0)
   }));
 };
+
 
 export const getTeamById = async (id: string): Promise<Team | null> => {
 
@@ -321,24 +255,24 @@ export const getTeamById = async (id: string): Promise<Team | null> => {
     },
     description: data.description,
     photoUrl: data.photo_url,
-    rating: Number(data.rating),
-    totalReviews: Number(data.total_reviews)
+    rating: Number(data.rating || 0),
+    totalReviews: Number(data.total_reviews || 0)
   };
 };
 
 
-// --- Reviews ---
+// =============================
+// REVIEWS
+// =============================
 
-export const addReview = async (
-  review: Omit<Review, "id" | "timestamp" | "average">
-) => {
+export const addReview = async (review: any) => {
 
   const average =
-    (review.boaConduta +
-      review.comunicacao +
-      review.pontualidade) / 3;
+    (Number(review.boaConduta) +
+      Number(review.comunicacao) +
+      Number(review.pontualidade)) / 3;
 
-  // 🔎 procurar review existente
+  // 🔎 verificar se já existe review desse time
   const { data: existingReviews, error: searchError } = await supabase
     .from("reviews")
     .select("*")
@@ -362,11 +296,11 @@ export const addReview = async (
         comunicacao: review.comunicacao,
         pontualidade: review.pontualidade,
         average,
-        comment: review.comment,
+        comment: review.comment
       })
       .eq("id", existing.id)
       .select()
-      .maybeSingle();
+      .single();
 
     data = res.data;
     error = res.error;
@@ -391,7 +325,6 @@ export const addReview = async (
 
     data = res.data;
     error = res.error;
-
   }
 
   if (error) throw new Error(error.message);
@@ -409,225 +342,48 @@ export const getReviews = async (teamId: string) => {
 
   if (error) throw new Error(error.message);
 
-  return data.map(r => ({
+  return (data || []).map(r => ({
     id: r.id,
     targetTeamId: r.target_team_id,
     authorTeamId: r.author_team_id,
     authorTeamName: r.author_team_name,
-    boaConduta: r.boa_conduta,
-    comunicacao: r.comunicacao,
-    pontualidade: r.pontualidade,
-    average: r.average,
+
+    boaConduta: Number(r.boa_conduta ?? 0),
+    comunicacao: Number(r.comunicacao ?? 0),
+    pontualidade: Number(r.pontualidade ?? 0),
+
+    average: Number(r.average ?? 0),
     comment: r.comment,
     timestamp: r.timestamp
   }));
 };
 
-// --- Video Upload ---
 
-export const uploadVideo = async (data: Omit<VideoEvidence, 'id' | 'timestamp'>): Promise<VideoEvidence> => {
-  await delay(2000); // Simulate upload time
-  const videos = getStorage<VideoEvidence>(STORAGE_KEYS.VIDEOS);
+// =============================
+// CHAT
+// =============================
 
-  const newVideo: VideoEvidence = {
-    ...data,
-    id: crypto.randomUUID(),
-    timestamp: new Date().toISOString(),
-    // @ts-ignore
-    average: 0, // Mock for interface compat if needed
-  };
-
-  videos.push(newVideo);
-  setStorage(STORAGE_KEYS.VIDEOS, videos);
-  return newVideo;
-};
-
-export const getVideos = async (teamId: string): Promise<VideoEvidence[]> => {
-  const videos = getStorage<VideoEvidence>(STORAGE_KEYS.VIDEOS);
-  return videos.filter(v => v.teamId === teamId);
-};
-
-
-// --- Notifications ---
-
-export const getNotifications = async (userId: string): Promise<Notification[]> => {
-  await delay(500);
-
-  // 🧹 limpa notificações lidas antigas
-  cleanupReadNotifications(userId, 10);
-
-  const notifications = getStorage<Notification>(STORAGE_KEYS.NOTIFICATIONS);
-  const userNotes = notifications.filter(n => n.userId === userId);
-
-  return userNotes.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
-};
-
-export const markNotificationRead = async (id: string): Promise<void> => {
-  const notifications = getStorage<Notification>(STORAGE_KEYS.NOTIFICATIONS);
-  const index = notifications.findIndex(n => n.id === id);
-  if (index >= 0) {
-    notifications[index].read = true;
-    setStorage(STORAGE_KEYS.NOTIFICATIONS, notifications);
-  }
-}
-
-  export const getConversation = async (
-    teamAId: string,
-    teamBId: string
-  ): Promise<TeamMessage[]> => {
-    // await delay(200);
-    const messages = getStorage<TeamMessage>(STORAGE_KEYS.MESSAGES);
-  
-    return messages
-      .filter(
-        m =>
-          (m.fromTeamId === teamAId && m.toTeamId === teamBId) ||
-          (m.fromTeamId === teamBId && m.toTeamId === teamAId)
-      )
-      .sort((a, b) => a.timestamp - b.timestamp);
-  };
-
-export const getInbox = async (teamId: string): Promise<{ otherTeam: Team, lastMessage: TeamMessage }[]> => {
-  await delay(500);
-  const messages = getStorage<TeamMessage>(STORAGE_KEYS.MESSAGES);
-  const teams = getStorage<Team>(STORAGE_KEYS.TEAMS);
-
-  // Find all interactions involving teamId
-  const interactions = new Map<string, TeamMessage>();
-
-  messages.forEach(m => {
-    if (m.fromTeamId === teamId || m.toTeamId === teamId) {
-      const otherId = m.fromTeamId === teamId ? m.toTeamId : m.fromTeamId;
-      const current = interactions.get(otherId);
-      if (!current || m.timestamp > current.timestamp) {
-        interactions.set(otherId, m);
-      }
-    }
-  });
-
-  const inbox: { otherTeam: Team, lastMessage: TeamMessage }[] = [];
-
-  for (const [otherId, msg] of interactions.entries()) {
-    const otherTeam = teams.find(t => t.id === otherId);
-    if (otherTeam) {
-      inbox.push({ otherTeam, lastMessage: msg });
-    }
-  }
-
-  // Sort by latest message
-  return inbox.sort((a, b) => b.lastMessage.timestamp - a.lastMessage.timestamp);
-};
-
-export const markConversationRead = async (teamId: string, otherTeamId: string) => {
-  const msgs = getStorage<TeamMessage>(STORAGE_KEYS.MESSAGES);
-  let updated = false;
-
-  msgs.forEach(m => {
-    if (m.toTeamId === teamId && m.fromTeamId === otherTeamId && !m.read) {
-      m.read = true;
-      updated = true;
-    }
-  });
-
-  if (updated) {
-    setStorage(STORAGE_KEYS.MESSAGES, msgs);
-  }
-};
-
-export const markMessageNotificationsFromTeamRead = async (
-  userId: string,
-  fromTeamId: string
-): Promise<void> => {
-  const notifications = getStorage<Notification>(STORAGE_KEYS.NOTIFICATIONS);
-  let updated = false;
-
-  notifications.forEach(n => {
-    if (
-      n.userId === userId &&
-      n.type === "message" &&
-      n.relatedTeamId === fromTeamId &&
-      !n.read
-    ) {
-      n.read = true;
-      updated = true;
-    }
-  });
-
-  if (updated) {
-    setStorage(STORAGE_KEYS.NOTIFICATIONS, notifications);
-  }
-};
-
-export const cleanupReadNotifications = (
-  userId: string,
-  maxRead: number = 10
-): void => {
-  const notifications = getStorage<Notification>(STORAGE_KEYS.NOTIFICATIONS);
-
-  // separa notificações do usuário
-  const userNotifications = notifications.filter(n => n.userId === userId);
-
-  // não lidas (nunca mexe)
-  const unread = userNotifications.filter(n => !n.read);
-
-  // lidas, ordenadas da mais recente para a mais antiga
-  const read = userNotifications
-    .filter(n => n.read)
-    .sort(
-      (a, b) =>
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    );
-
-  // mantém só as N mais recentes
-  const keptRead = read.slice(0, maxRead);
-
-  // notificações de outros usuários (não mexe)
-  const others = notifications.filter(n => n.userId !== userId);
-
-  // salva tudo de volta
-  setStorage(STORAGE_KEYS.NOTIFICATIONS, [
-    ...others,
-    ...unread,
-    ...keptRead
-  ]);
-};
-
-export const addReport = async (report: {
-  id: string;
-  targetTeamId: string;
-  authorTeamId: string;
-  comment: string;
-  fileUrl?: string | null;
-  createdAt: number;
-}) => {
-  await delay(400);
-
-  const reports = getStorage<any>(STORAGE_KEYS.REPORTS);
-  reports.push(report);
-  setStorage(STORAGE_KEYS.REPORTS, reports);
-
-  return report;
-};
-
-// Busca as mensagens entre o meu time e o time adversário
 export const getTeamMessages = async (myTeamId: string, otherTeamId: string) => {
+
   const { data, error } = await supabase
-    .from('team_messages')
-    .select('*')
+    .from("team_messages")
+    .select("*")
     .or(`and(from_team_id.eq.${myTeamId},to_team_id.eq.${otherTeamId}),and(from_team_id.eq.${otherTeamId},to_team_id.eq.${myTeamId})`)
-    .order('timestamp', { ascending: true }); // Usei 'timestamp' conforme sua imagem
+    .order("timestamp", { ascending: true });
 
   if (error) {
     console.error("Erro ao buscar mensagens:", error);
     return [];
   }
+
   return data;
 };
 
-// Envia uma nova mensagem - BLOCO CORRIGIDO
+
 export const sendMessage = async (fromId: string, toId: string, text: string) => {
+
   const { data, error } = await supabase
-    .from('team_messages')
+    .from("team_messages")
     .insert({
       from_team_id: fromId,
       to_team_id: toId,
@@ -645,3 +401,157 @@ export const sendMessage = async (fromId: string, toId: string, text: string) =>
   return data;
 };
 
+// =============================
+// CONVERSATION
+// =============================
+
+export const getConversation = async (teamAId: string, teamBId: string) => {
+
+  const { data, error } = await supabase
+    .from("team_messages")
+    .select("*")
+    .or(
+      `and(from_team_id.eq.${teamAId},to_team_id.eq.${teamBId}),and(from_team_id.eq.${teamBId},to_team_id.eq.${teamAId})`
+    )
+    .order("timestamp", { ascending: true });
+
+  if (error) {
+    console.error(error);
+    return [];
+  }
+
+  return data;
+};
+
+
+// =============================
+// MARK CONVERSATION READ
+// =============================
+
+export const markConversationRead = async (
+  teamId: string,
+  otherTeamId: string
+) => {
+
+  const { error } = await supabase
+    .from("team_messages")
+    .update({ read: true })
+    .eq("to_team_id", teamId)
+    .eq("from_team_id", otherTeamId)
+    .eq("read", false);
+
+  if (error) console.error(error);
+};
+
+
+// =============================
+// NOTIFICATIONS
+// =============================
+
+export const getNotifications = async (userId: string) => {
+
+  const { data, error } = await supabase
+    .from("notifications")
+    .select("*")
+    .eq("user_id", userId)
+    .order("timestamp", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    return [];
+  }
+
+  return data;
+};
+
+
+export const markNotificationRead = async (id: string) => {
+
+  const { error } = await supabase
+    .from("notifications")
+    .update({ read: true })
+    .eq("id", id);
+
+  if (error) console.error(error);
+};
+
+
+export const markMessageNotificationsFromTeamRead = async (
+  userId: string,
+  fromTeamId: string
+) => {
+
+  const { error } = await supabase
+    .from("notifications")
+    .update({ read: true })
+    .eq("user_id", userId)
+    .eq("related_team_id", fromTeamId)
+    .eq("type", "message")
+    .eq("read", false);
+
+  if (error) console.error(error);
+};
+
+// =============================
+// REPORTS
+// =============================
+
+export const addReport = async (report: {
+  targetTeamId: string;
+  authorTeamId: string;
+  comment: string;
+  fileUrl?: string | null;
+}) => {
+
+  const { data, error } = await supabase
+    .from("reports")
+    .insert({
+      target_team_id: report.targetTeamId,
+      author_team_id: report.authorTeamId,
+      comment: report.comment,
+      file_url: report.fileUrl ?? null
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Erro ao enviar denúncia:", error);
+    throw error;
+  }
+
+  return data;
+};
+
+// =============================
+// INBOX (lista de conversas)
+// =============================
+
+export const getInbox = async (teamId: string) => {
+
+  const { data: messages, error } = await supabase
+    .from("team_messages")
+    .select("*")
+    .or(`from_team_id.eq.${teamId},to_team_id.eq.${teamId}`)
+    .order("timestamp", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    return [];
+  }
+
+  const interactions = new Map<string, any>();
+
+  messages.forEach((m: any) => {
+
+    const otherId =
+      m.from_team_id === teamId
+        ? m.to_team_id
+        : m.from_team_id;
+
+    if (!interactions.has(otherId)) {
+      interactions.set(otherId, m);
+    }
+  });
+
+  return Array.from(interactions.values());
+};

@@ -80,6 +80,13 @@ const TeamProfilePage = () => {
     load();
   }, [id, user, isMyTeam]);
 
+  useEffect(() => {
+    if (user?.teamId) {
+      const already = reviews.find((rv) => rv.authorTeamId === user.teamId);
+      setMyReview(already || null);
+    }
+  }, [reviews, user]);
+
 
 
   const total = reviews.length;

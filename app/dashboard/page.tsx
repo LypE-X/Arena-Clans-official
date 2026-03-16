@@ -168,7 +168,7 @@ const DashboardPage = () => {
                   <div className="flex items-center justify-between pt-4 border-t border-dark-700/50 absolute bottom-4 left-6 right-6">
                     <div className="flex items-center gap-1">
                       <Icons.Star fill />
-                      <span className="font-bold text-white">{team.rating}</span>
+                      <span className="font-bold text-white">{Number(team.rating || 0).toFixed(1)}</span>
                       <span className="text-gray-600 text-xs">({team.totalReviews})</span>
                     </div>
                   </div>
