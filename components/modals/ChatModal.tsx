@@ -95,7 +95,7 @@ const ChatModal = ({
         >
           <div className="flex items-center gap-3">
             <img
-              src={otherTeam.photoUrl}
+              src={otherTeam.photoUrl || '/logo.png'}
               alt={otherTeam.name}
               className="w-10 h-10 rounded-full object-cover border border-[#21ff21]"
             />
@@ -134,10 +134,9 @@ const ChatModal = ({
                     rounded-xl 
                     p-3 
                     text-sm 
-                    ${
-                      isMe
-                        ? 'bg-[#21ff21] text-black rounded-tr-none'
-                        : 'bg-dark-800 text-gray-200 border border-dark-700 rounded-tl-none'
+                    ${isMe
+                      ? 'bg-[#21ff21] text-black rounded-tr-none'
+                      : 'bg-dark-800 text-gray-200 border border-dark-700 rounded-tl-none'
                     }
                   `}
                 >
