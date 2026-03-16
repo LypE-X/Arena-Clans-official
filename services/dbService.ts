@@ -363,7 +363,10 @@ export const getReviews = async (teamId: string) => {
 // CHAT
 // =============================
 
-export const getTeamMessages = async (myTeamId: string, otherTeamId: string) => {
+export const getTeamMessages = async (
+  myTeamId: string,
+  otherTeamId: string
+) => {
 
   const { data, error } = await supabase
     .from("team_messages")
@@ -372,11 +375,18 @@ export const getTeamMessages = async (myTeamId: string, otherTeamId: string) => 
     .order("timestamp", { ascending: true });
 
   if (error) {
-    console.error("Erro ao buscar mensagens:", error);
+    console.error("Supabase error:", error.message);
     return [];
   }
 
-  return data;
+  return (data || []).map((m) => ({
+    id: m.id,
+    fromTeamId: m.from_team_id,
+    toTeamId: m.to_team_id,
+    text: m.text,
+    read: m.read,
+    timestamp: m.timestamp
+  }));
 };
 
 
@@ -388,13 +398,14 @@ export const sendMessage = async (fromId: string, toId: string, text: string) =>
       from_team_id: fromId,
       to_team_id: toId,
       text,
-      read: false
+      read: false,
+      timestamp: Date.now()
     })
     .select()
     .single();
 
   if (error) {
-    console.error("Erro ao enviar mensagem:", error);
+    console.error("Supabase error:", error.message);
     throw error;
   }
 

@@ -27,38 +27,49 @@ const ChatModal = ({
 
   // Load team + messages
   useEffect(() => {
-    // Ajustado para usar 'open' em vez de 'isOpen'
-    // Ajustado para usar 'currentTeamId' e 'teamId' que você já tem
     if (!open || !currentTeamId || !teamId) return;
-  
+
     const loadMessages = async () => {
-      // Usando 'db.getTeamMessages' para bater com o seu import
       const msgs = await db.getTeamMessages(currentTeamId, teamId);
       setMessages(msgs);
+
+      const team = await db.getTeamById(teamId);
+      setOtherTeam(team);
     };
+
     loadMessages();
-  
+
     const channel = supabase
       .channel('chat-realtime')
-      .on('postgres_changes', { 
-        event: 'INSERT', 
-        schema: 'public', 
-        table: 'team_messages' 
-      }, (payload: any) => { 
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'team_messages'
+      }, (payload: any) => {
         const newMsg = payload.new;
         if (
           (newMsg.from_team_id === currentTeamId && newMsg.to_team_id === teamId) ||
           (newMsg.from_team_id === teamId && newMsg.to_team_id === currentTeamId)
         ) {
-          setMessages((current) => [...current, newMsg]);
+          setMessages((current) => [
+            ...current,
+            {
+              id: newMsg.id,
+              fromTeamId: newMsg.from_team_id,
+              toTeamId: newMsg.to_team_id,
+              text: newMsg.text,
+              read: newMsg.read,
+              timestamp: new Date(newMsg.timestamp).getTime()
+            }
+          ]);
         }
       })
       .subscribe();
-  
+
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [open, currentTeamId, teamId]); 
+  }, [open, currentTeamId, teamId]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();

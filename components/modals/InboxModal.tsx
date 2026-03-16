@@ -38,7 +38,10 @@ const InboxModal = ({
             <p className="text-gray-500 text-center mt-4 italic">Você ainda não tem conversas.</p>
           ) : (
             inbox.map(({ otherTeam, lastMessage }) => {
-              const isUnread = !lastMessage.read && lastMessage.toTeamId === myTeamId;
+              if (!lastMessage) return null;
+
+              const isUnread =
+                !lastMessage.read && lastMessage.toTeamId === myTeamId;
 
               return (
                 <div
@@ -49,9 +52,8 @@ const InboxModal = ({
                     onOpenChat(otherTeam.id);
                     onClose();
                   }}
-                  className={`p-4 rounded-xl border cursor-pointer transition-all flex justify-between items-center ${
-                    isUnread ? 'bg-dark-800/40 border-[#21ff21]/60' : 'bg-dark-800/20 border-dark-700'
-                  } hover:bg-dark-800/60`}
+                  className={`p-4 rounded-xl border cursor-pointer transition-all flex justify-between items-center ${isUnread ? 'bg-dark-800/40 border-[#21ff21]/60' : 'bg-dark-800/20 border-dark-700'
+                    } hover:bg-dark-800/60`}
                 >
                   <div className="flex items-center gap-3">
                     <img
