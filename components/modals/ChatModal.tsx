@@ -71,6 +71,22 @@ const ChatModal = ({
     };
   }, [open, currentTeamId, teamId]);
 
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({
+      behavior: 'smooth'
+    });
+  }, [messages]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    setTimeout(() => {
+      bottomRef.current?.scrollIntoView({
+        behavior: 'auto'
+      });
+    }, 100);
+  }, [open]);
+
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!text.trim()) return;
