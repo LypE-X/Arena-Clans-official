@@ -116,7 +116,7 @@ const ChatModal = ({
 
     try {
       // 1. Envia para o banco de dados (o Realtime cuidará de mostrar na tela)
-      await db.sendMessage(currentTeamId, teamId, text);
+      await db.sendMessage(currentTeamId, teamId, text, userId);
 
       // 2. Limpa o campo de texto
       setText('');

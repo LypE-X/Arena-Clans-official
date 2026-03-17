@@ -1,5 +1,8 @@
+ // <--- Isso diz ao Next.js: "Rode tudo aqui no servidor"
 import { User, Team, Review, TeamMessage } from "../types";
 import { supabase } from "./supabaseClient";
+
+
 
 
 // =============================
@@ -391,7 +394,12 @@ export const getTeamMessages = async (
 };
 
 
-export const sendMessage = async (fromId: string, toId: string, text: string) => {
+export const sendMessage = async (
+  fromId: string,
+  toId: string,
+  text: string,
+  userId: string
+) => {
 
   const { data, error } = await supabase
     .from("team_messages")
@@ -410,8 +418,16 @@ export const sendMessage = async (fromId: string, toId: string, text: string) =>
     throw error;
   }
 
+  try {
+    await createOrUpdateMessageNotification(fromId, toId, userId);
+  } catch (err) {
+    console.error("Erro ao criar notificação:", err);
+  }
+
   return data;
 };
+
+
 
 // =============================
 // CONVERSATION
@@ -582,3 +598,37 @@ export const getInbox = async (teamId: string) => {
 
   return Array.from(interactions.values());
 };
+
+export const createOrUpdateMessageNotification = async (
+  fromTeamId: string,
+  toTeamId: string,
+  userId: string // 👈 passa direto
+) => {
+
+  const { data: existing } = await supabase
+    .from("notifications")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("type", "message")
+    .eq("related_team_id", fromTeamId)
+    .eq("read", false);
+
+  if (existing && existing.length > 0) return;
+
+  const { data: team } = await supabase
+    .from("teams")
+    .select("name")
+    .eq("id", fromTeamId)
+    .single();
+
+  await supabase.from("notifications").insert({
+    user_id: userId,
+    type: "message",
+    related_team_id: fromTeamId,
+    title: "Nova mensagem",
+    message: `${team?.name || "Equipe"} enviou novas mensagens`,
+    read: false
+  });
+};
+
+

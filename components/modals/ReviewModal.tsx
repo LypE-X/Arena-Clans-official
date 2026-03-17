@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { Team } from '../../types';
 import * as db from '../../services/dbService';
+import { createReviewNotificationAction } from "@/services/actions";
 
 const ReviewModal = ({
   open,
@@ -62,6 +63,7 @@ const ReviewModal = ({
       return;
     }
 
+    // 1. Salva a review normalmente (via dbService/client)
     await db.addReview({
       targetTeamId: targetTeam.id,
       authorTeamId,
@@ -71,6 +73,15 @@ const ReviewModal = ({
       pontualidade,
       comment
     });
+
+    // 2. DISPARA A NOTIFICAÇÃO (via Server Action que criamos)
+    // Passamos o ID do time que recebeu a avaliação
+    try {
+      await createReviewNotificationAction(targetTeam.id);
+    } catch (err) {
+      console.error("Falha ao enviar notificação:", err);
+      // Não travamos o fluxo do usuário se a notificação falhar
+    }
 
     // esperar o trigger do supabase atualizar o rating
     setTimeout(async () => {

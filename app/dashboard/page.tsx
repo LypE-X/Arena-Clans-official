@@ -12,6 +12,8 @@ import Button from '../../components/ui/Button';
 import { Icons } from '../../components/ui/Icons';
 import { useAppContext } from '../../components/layout/AppShell';
 
+export const revalidate = 0;
+
 const DashboardPage = () => {
   const { user, openChat } = useAppContext();
   const [teams, setTeams] = React.useState<any[]>([]);
@@ -49,7 +51,12 @@ const DashboardPage = () => {
     }
     const hasConvo = (await db.getConversation(user.teamId, teamId)).length > 0;
     if (!hasConvo) {
-      await db.sendMessage(user.teamId, teamId, 'Olá! Vamos marcar um treino?');
+      await db.sendMessage(
+        user.teamId,
+        teamId,
+        'Olá! Vamos marcar um treino?',
+        user.uid
+      );
     }
     openChat(teamId);
   };
