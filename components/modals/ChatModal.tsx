@@ -4,6 +4,7 @@ import { Team, TeamMessage } from '../../types';
 import * as db from '../../services/dbService';
 import { supabase } from '@/services/supabaseClient';
 import { Icons } from '../ui/Icons';
+import { createMessageNotificationAction } from "@/services/actions";
 
 
 const ChatModal = ({
@@ -115,8 +116,12 @@ const ChatModal = ({
     if (!text.trim()) return;
 
     try {
-      // 1. Envia para o banco de dados (o Realtime cuidará de mostrar na tela)
+      // 1. Envia para o banco de dados
       await db.sendMessage(currentTeamId, teamId, text, userId);
+
+      // ✅ 1.5 DISPARA A NOTIFICAÇÃO (Nova linha aqui)
+      // Importe: import { createMessageNotificationAction } from "@/services/actions";
+      await createMessageNotificationAction(currentTeamId, teamId);
 
       // 2. Limpa o campo de texto
       setText('');
