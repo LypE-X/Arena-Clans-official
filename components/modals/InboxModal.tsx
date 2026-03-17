@@ -57,7 +57,7 @@ const InboxModal = ({
                 >
                   <div className="flex items-center gap-3">
                     <img
-                      src={otherTeam.photoUrl}
+                      src={otherTeam.photoUrl || '/logo.png'}
                       alt=""
                       className="w-12 h-12 rounded-lg object-cover border border-[#21ff21]/30"
                     />

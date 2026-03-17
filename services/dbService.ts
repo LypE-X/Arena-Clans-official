@@ -546,23 +546,38 @@ export const getInbox = async (teamId: string) => {
     .order("timestamp", { ascending: false });
 
   if (error) {
-    console.error(error);
+    console.error("Supabase error:", error.message);
     return [];
   }
 
   const interactions = new Map<string, any>();
 
-  messages.forEach((m: any) => {
+  for (const m of messages || []) {
 
     const otherId =
       m.from_team_id === teamId
         ? m.to_team_id
         : m.from_team_id;
 
+    // evita duplicar conversa
     if (!interactions.has(otherId)) {
-      interactions.set(otherId, m);
+
+      // 🔥 busca dados da equipe
+      const otherTeam = await getTeamById(otherId);
+
+      interactions.set(otherId, {
+        otherTeam,
+        lastMessage: {
+          id: m.id,
+          fromTeamId: m.from_team_id,
+          toTeamId: m.to_team_id,
+          text: m.text,
+          read: m.read,
+          timestamp: m.timestamp
+        }
+      });
     }
-  });
+  }
 
   return Array.from(interactions.values());
 };

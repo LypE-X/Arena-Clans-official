@@ -14,6 +14,7 @@ import CommentsModal from '../../../components/modals/CommentsModal';
 import InboxModal from '../../../components/modals/InboxModal';
 import ReportModal from '../../../components/modals/ReportModal';
 import { useAppContext } from '../../../components/layout/AppShell';
+import { supabase } from '../../../services/supabaseClient';
 
 const TeamProfilePage = () => {
   const { user, openChat } = useAppContext();
@@ -79,6 +80,37 @@ const TeamProfilePage = () => {
     };
     load();
   }, [id, user, isMyTeam]);
+
+  useEffect(() => {
+    if (!user?.teamId) return;
+
+    const channel = supabase
+      .channel('inbox-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'team_messages'
+        },
+        async (payload) => {
+          const msg = payload.new;
+
+          // 🔥 só atualiza se for mensagem relacionada ao usuário
+          if (
+            msg.from_team_id === user.teamId ||
+            msg.to_team_id === user.teamId
+          ) {
+            await refreshInbox();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
   useEffect(() => {
     if (user?.teamId) {
