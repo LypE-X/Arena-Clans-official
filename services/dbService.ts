@@ -372,7 +372,8 @@ export const getTeamMessages = async (
     .from("team_messages")
     .select("*")
     .or(`and(from_team_id.eq.${myTeamId},to_team_id.eq.${otherTeamId}),and(from_team_id.eq.${otherTeamId},to_team_id.eq.${myTeamId})`)
-    .order("timestamp", { ascending: true });
+    .order("timestamp", { ascending: true })
+    .limit(50);
 
   if (error) {
     console.error("Supabase error:", error.message);

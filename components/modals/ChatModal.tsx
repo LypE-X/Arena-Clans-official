@@ -5,6 +5,7 @@ import * as db from '../../services/dbService';
 import { supabase } from '@/services/supabaseClient';
 import { Icons } from '../ui/Icons';
 
+
 const ChatModal = ({
   open,
   onClose,
@@ -24,17 +25,39 @@ const ChatModal = ({
   const [text, setText] = useState('');
   const [otherTeam, setOtherTeam] = useState<Team | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [messagesCache, setMessagesCache] = useState<Record<string, any[]>>({});
 
   // Load team + messages
   useEffect(() => {
     if (!open || !currentTeamId || !teamId) return;
 
     const loadMessages = async () => {
-      const msgs = await db.getTeamMessages(currentTeamId, teamId);
-      setMessages(msgs);
 
-      const team = await db.getTeamById(teamId);
+      // ✅ 1. usa cache se já existir
+      if (messagesCache[teamId]) {
+        setMessages(messagesCache[teamId]);
+
+        // ainda precisa carregar o time
+        const team = await db.getTeamById(teamId);
+        setOtherTeam(team);
+
+        return;
+      }
+
+      // ✅ 2. busca tudo em paralelo
+      const [msgs, team] = await Promise.all([
+        db.getTeamMessages(currentTeamId, teamId),
+        db.getTeamById(teamId)
+      ]);
+
+      setMessages(msgs);
       setOtherTeam(team);
+
+      // ✅ 3. salva no cache
+      setMessagesCache((prev) => ({
+        ...prev,
+        [teamId]: msgs
+      }));
     };
 
     loadMessages();
@@ -109,6 +132,7 @@ const ChatModal = ({
   };
 
   if (!open || !otherTeam) return null;
+  const visibleMessages = messages.slice(-50);
 
   return (
     <div className="fixed inset-0 z-[99999] bg-black/70 backdrop-blur-md flex items-center justify-center p-2 sm:p-4">
@@ -166,7 +190,7 @@ const ChatModal = ({
             <p className="text-center text-gray-500 text-sm mt-6">Comece a conversa!</p>
           )}
 
-          {messages.map((m) => {
+          {visibleMessages.map((m) => {
             const isMe = m.fromTeamId === currentTeamId;
             return (
               <div key={m.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
