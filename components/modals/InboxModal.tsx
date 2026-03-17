@@ -62,7 +62,12 @@ const InboxModal = ({
                       className="w-12 h-12 rounded-lg object-cover border border-[#21ff21]/30"
                     />
                     <div>
-                      <h3 className="text-white font-bold text-sm">{otherTeam.name}</h3>
+                      <h3 className="text-white font-bold text-sm flex items-center gap-5">
+                        {otherTeam.name}
+                        {isUnread && (
+                          <span className="w-4 h-4 bg-green-400 rounded-full animate-pulse" />
+                        )}
+                      </h3>
                       <p className={`text-xs ${isUnread ? 'text-[#21ff21]' : 'text-gray-400'}`}>
                         {lastMessage.text.substring(0, 35)}
                         {lastMessage.text.length > 35 && '...'}
@@ -70,15 +75,10 @@ const InboxModal = ({
                     </div>
                   </div>
 
-                  <div className="text-right">
+                  <div className="text-right flex flex-col items-end gap-1">
                     <span className="text-[10px] text-gray-500 block">
                       {new Date(lastMessage.timestamp).toLocaleDateString()}
                     </span>
-                    {isUnread && (
-                      <span className="text-[10px] bg-[#21ff21] text-black px-2 py-1 rounded font-bold">
-                        NOVA
-                      </span>
-                    )}
                   </div>
                 </div>
               );
