@@ -8,6 +8,7 @@ import { Icons } from '../ui/Icons';
 
 const Navbar = ({
   user,
+  onOpenChat,
   onRequestLogout
 }: {
   user: User | null;
@@ -63,7 +64,10 @@ const Navbar = ({
             )}
 
             {/* ✅ O Menu de Notificações agora está isolado e não quebra os outros */}
-            <NotificationMenu userId={user.uid} />
+            <NotificationMenu
+              userId={user.uid}
+              onOpenChat={onOpenChat}
+            />
 
             <div className="w-px h-6 bg-dark-800 mx-2"></div>
 

@@ -1,14 +1,22 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation'; // 1. Importar o roteador
+import { useRouter } from 'next/navigation';
 import { Icons } from '../ui/Icons';
 import * as db from '@/services/dbService';
 import { supabase } from '@/services/supabaseClient';
+import { markNotificationAsReadAction } from "@/services/actions";
 
-export default function NotificationMenu({ userId }: { userId: string }) {
+// Adicione onOpenChat nas Props
+export default function NotificationMenu({
+    userId,
+    onOpenChat
+}: {
+    userId: string;
+    onOpenChat: (teamId: string) => void
+}) {
     const [notifications, setNotifications] = useState<any[]>([]);
     const [isOpen, setIsOpen] = useState(false);
-    const router = useRouter(); // 2. Inicializar o roteador
+    const router = useRouter();
 
     useEffect(() => {
         const load = async () => {
@@ -32,24 +40,28 @@ export default function NotificationMenu({ userId }: { userId: string }) {
         return () => { supabase.removeChannel(channel); };
     }, [userId]);
 
-    // Lógica para contar não lidas (ajustada para o seu padrão)
     const totalUnread = notifications.filter(n => !n.read).length;
 
-    // 3. Função de clique unificada: Marca como lido + Navega + Fecha
-    const handleNotificationClick = async (id: string) => {
-        await db.markNotificationRead(id);
-        setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    // Função de clique com roteamento inteligente
+    const handleNotificationClick = async (n: any) => {
+        // 2. Chame a Action que ignora o RLS e grava de verdade no banco
+        await markNotificationAsReadAction(n.id);
 
-        setIsOpen(false); // Fecha o menu
-        router.push('/my-team'); // Navega para a página da equipe
+        // 3. Atualiza o estado local para sumir a bolinha na hora
+        setNotifications(prev => prev.map(item => item.id === n.id ? { ...item, read: true } : item));
+
+        setIsOpen(false);
+
+        if (n.type === 'message' && n.related_team_id) {
+            onOpenChat(n.related_team_id);
+        } else {
+            router.push('/my-team');
+        }
     };
 
     return (
         <div className="relative">
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="relative p-2 text-gray-400 hover:text-[#21ff21] transition"
-            >
+            <button onClick={() => setIsOpen(!isOpen)} className="relative p-2 text-gray-400 hover:text-[#21ff21] transition">
                 <Icons.Bell />
                 {totalUnread > 0 && (
                     <span className="absolute top-1 right-1 bg-red-600 text-white text-[10px] px-1.5 rounded-full animate-pulse">
@@ -71,8 +83,7 @@ export default function NotificationMenu({ userId }: { userId: string }) {
                         notifications.map((n) => (
                             <div
                                 key={n.id}
-                                // 4. Clique na linha toda para ler e navegar
-                                onClick={() => handleNotificationClick(n.id)}
+                                onClick={() => handleNotificationClick(n)} // Passa o objeto completo
                                 className={`p-4 border-b border-white/5 flex gap-3 hover:bg-white/10 cursor-pointer transition ${!n.read ? 'bg-[#21ff21]/5' : ''}`}
                             >
                                 <div className="mt-1 flex-shrink-0">
@@ -82,15 +93,13 @@ export default function NotificationMenu({ userId }: { userId: string }) {
                                         <div className="text-yellow-400"><Icons.Star fill={true} /></div>
                                     )}
                                 </div>
-                                <div className="flex-1 min-w-0">
+                                <div className="flex-1 min-w-0 text-left">
                                     <p className="text-sm font-semibold text-gray-100 truncate">{n.title}</p>
                                     <p className="text-xs text-gray-400 leading-relaxed">{n.message}</p>
                                     <span className="text-[10px] text-gray-600 block mt-1">
                                         {new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </span>
                                 </div>
-
-                                {/* 5. Bolinha verde neon indica "Não lida" */}
                                 {!n.read && (
                                     <div className="self-center flex-shrink-0">
                                         <div className="w-2 h-2 bg-[#21ff21] rounded-full shadow-[0_0_8px_#21ff21]" />
