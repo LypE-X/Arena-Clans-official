@@ -77,7 +77,7 @@ const ReviewModal = ({
     // 2. DISPARA A NOTIFICAÇÃO (via Server Action que criamos)
     // Passamos o ID do time que recebeu a avaliação
     try {
-      await createReviewNotificationAction(targetTeam.id);
+      createReviewNotificationAction(targetTeam.id);
     } catch (err) {
       console.error("Falha ao enviar notificação:", err);
       // Não travamos o fluxo do usuário se a notificação falhar

@@ -121,7 +121,7 @@ const ChatModal = ({
 
       // ✅ 1.5 DISPARA A NOTIFICAÇÃO (Nova linha aqui)
       // Importe: import { createMessageNotificationAction } from "@/services/actions";
-      await createMessageNotificationAction(currentTeamId, teamId);
+      createMessageNotificationAction(currentTeamId, teamId);
 
       // 2. Limpa o campo de texto
       setText('');
