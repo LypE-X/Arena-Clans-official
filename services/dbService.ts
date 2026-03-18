@@ -420,7 +420,7 @@ export const sendMessage = async (
   }
 
   try {
-    
+
   } catch (err) {
     console.error("Erro ao criar notificação:", err);
   }
@@ -525,26 +525,20 @@ export const markMessageNotificationsFromTeamRead = async (
 // REPORTS
 // =============================
 
-export const addReport = async (report: {
-  targetTeamId: string;
-  authorTeamId: string;
+export const createReport = async (report: {
+  target_team_id: string;
+  author_team_id: string;
   comment: string;
-  fileUrl?: string | null;
+  file_url?: string | null;
 }) => {
-
   const { data, error } = await supabase
     .from("reports")
-    .insert({
-      target_team_id: report.targetTeamId,
-      author_team_id: report.authorTeamId,
-      comment: report.comment,
-      file_url: report.fileUrl ?? null
-    })
+    .insert([report]) // Passamos o objeto direto aqui
     .select()
     .single();
 
   if (error) {
-    console.error("Erro ao enviar denúncia:", error);
+    console.error("Erro detalhado do Supabase:", error.message);
     throw error;
   }
 
@@ -599,7 +593,6 @@ export const getInbox = async (teamId: string) => {
 
   return Array.from(interactions.values());
 };
-
 
 
 

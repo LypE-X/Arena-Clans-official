@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-
-import * as db from '../../services/dbService';
+import { useState } from 'react';
+import { createReport } from "@/services/dbService"; // Verifique se o caminho está correto
+import { toast } from "react-hot-toast";
 
 type ReportModalProps = {
   open: boolean;
@@ -17,26 +17,28 @@ const ReportModal = ({ open, onClose, targetTeamId, authorTeamId }: ReportModalP
 
   const handleSubmit = async () => {
     if (!comment.trim()) {
-      alert('Descreva o motivo do report.');
+      toast.error('Por favor, descreva o motivo da denúncia.');
       return;
     }
 
-    let fileUrl: string | null = null;
+    try {
+      // Usamos os nomes exatos das colunas do seu banco (target_team_id, etc)
+      await createReport({
+        target_team_id: targetTeamId,
+        author_team_id: authorTeamId,
+        comment: comment,
+        file_url: null,
+      });
 
-    if (file) {
-      fileUrl = URL.createObjectURL(file);
+      toast.success("Denúncia enviada com sucesso!");
+      setComment('');
+      onClose();
+
+    } catch (error) {
+      // Isso vai mostrar no seu console o erro real vindo do banco
+      console.error("Erro ao salvar no Supabase:", error);
+      toast.error("Erro ao enviar denúncia. Verifique sua conexão.");
     }
-
-    await db.addReport({
-      id: crypto.randomUUID(),
-      targetTeamId,
-      authorTeamId,
-      comment,
-      fileUrl,
-      createdAt: Date.now()
-    });
-
-    onClose();
   };
 
   return (
