@@ -545,6 +545,29 @@ export const createReport = async (report: {
   return data;
 };
 
+export const uploadReportFile = async (file: File) => {
+  // Criamos um nome único para o arquivo (ex: 123456789-foto.jpg)
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${Math.random()}-${Date.now()}.${fileExt}`;
+  const filePath = fileName;
+
+  const { data, error } = await supabase.storage
+    .from('report_files') // Nome do bucket que criamos
+    .upload(filePath, file);
+
+  if (error) {
+    console.error("Erro no upload:", error.message);
+    throw error;
+  }
+
+  // Pegamos o link público do arquivo
+  const { data: publicUrl } = supabase.storage
+    .from('reports_files')
+    .getPublicUrl(filePath);
+
+  return publicUrl.publicUrl;
+};
+
 // =============================
 // INBOX (lista de conversas)
 // =============================

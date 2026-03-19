@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createReport } from "@/services/dbService"; // Verifique se o caminho está correto
+import { createReport, uploadReportFile  } from "@/services/dbService"; // Verifique se o caminho está correto
 import { toast } from "react-hot-toast";
 
 type ReportModalProps = {
@@ -22,22 +22,31 @@ const ReportModal = ({ open, onClose, targetTeamId, authorTeamId }: ReportModalP
     }
 
     try {
-      // Usamos os nomes exatos das colunas do seu banco (target_team_id, etc)
+      let finalFileUrl = "";
+
+      // Se o usuário selecionou um arquivo, fazemos o upload primeiro
+      if (file) {
+        toast.loading("Enviando arquivo...", { id: "uploading" });
+        finalFileUrl = await uploadReportFile(file);
+        toast.dismiss("uploading");
+      }
+
       await createReport({
         target_team_id: targetTeamId,
         author_team_id: authorTeamId,
         comment: comment,
-        file_url: null,
+        file_url: finalFileUrl, // Agora enviamos o link real!
       });
 
       toast.success("Denúncia enviada com sucesso!");
       setComment('');
+      setFile(null);
       onClose();
 
     } catch (error) {
-      // Isso vai mostrar no seu console o erro real vindo do banco
-      console.error("Erro ao salvar no Supabase:", error);
-      toast.error("Erro ao enviar denúncia. Verifique sua conexão.");
+      toast.dismiss("uploading");
+      console.error("Erro completo:", error);
+      toast.error("Erro ao processar denúncia.");
     }
   };
 
