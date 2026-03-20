@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Team } from '../../types';
 import * as db from '../../services/dbService';
 import { createReviewNotificationAction } from "@/services/actions";
+import { Star } from "lucide-react";
 
 const ReviewModal = ({
   open,
@@ -91,19 +92,42 @@ const ReviewModal = ({
     onClose();
   };
 
-  const RatingStars = ({ value, setter }: { value: number; setter: (v: number) => void }) => (
-    <div className="flex gap-2">
-      {[1, 2, 3, 4, 5].map((n) => (
-        <span
-          key={n}
-          className={`cursor-pointer text-3xl transition-all ${n <= value ? 'text-yellow-400' : 'text-gray-600'}`}
-          onClick={() => setRating(setter, n)}
-        >
-          ⭐
-        </span>
-      ))}
-    </div>
-  );
+  const RatingStars = ({
+    value,
+    setter
+  }: {
+    value: number;
+    setter: (v: number) => void;
+  }) => {
+    const [hover, setHover] = useState(0);
+
+    return (
+      <div className="flex gap-2">
+        {[1, 2, 3, 4, 5].map((n) => {
+          const isActive = n <= (hover || value);
+
+          return (
+            <span
+              key={n}
+              className={`cursor-pointer text-3xl transition-all duration-200 ease-in-out active:scale-95 ${isActive
+                ? 'text-yellow-400 scale-110'
+                : 'text-gray-600 hover:text-yellow-300'
+                }`}
+              onClick={() => setter(n)}
+              onMouseEnter={() => setHover(n)}
+              onMouseLeave={() => setHover(0)}
+            >
+              <Star
+                size={28}
+                fill={isActive ? "#facc15" : "none"}
+                stroke={isActive ? "#facc15" : "#4b5563"}
+              />
+            </span>
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[200] p-4">
