@@ -40,7 +40,14 @@ const AuthPage = () => {
       if (mode === 'login') {
         user = await db.loginUser(formData.email, formData.password);
       } else {
-        if (!formData.name || !formData.cpf || !formData.phone) throw new Error('Preencha todos os campos obrigatórios.');
+        if (!formData.name || !formData.cpf || !formData.phone) {
+          throw new Error('Preencha todos os campos obrigatórios.');
+        }
+
+        if (formData.name.length > 50) {
+          throw new Error('Nome deve ter no máximo 50 caracteres.');
+        }
+
         user = await db.registerUser(formData);
       }
       setUser(user);
