@@ -85,6 +85,7 @@ const AuthPage = () => {
                 placeholder="Seu nome real"
                 value={formData.name}
                 onChange={(e: any) => setFormData({ ...formData, name: e.target.value })}
+                maxLength={50}
                 required
               />
               <div className="grid grid-cols-2 gap-4">
