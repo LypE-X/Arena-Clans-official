@@ -23,7 +23,6 @@ const AuthPage = () => {
     name: '',
     email: '',
     password: '',
-    cpf: '',
     phone: '',
     city: '',
     state: '',
@@ -40,7 +39,7 @@ const AuthPage = () => {
       if (mode === 'login') {
         user = await db.loginUser(formData.email, formData.password);
       } else {
-        if (!formData.name || !formData.cpf || !formData.phone) {
+        if (!formData.name || !formData.phone) {
           throw new Error('Preencha todos os campos obrigatórios.');
         }
 
@@ -96,13 +95,6 @@ const AuthPage = () => {
                 required
               />
               <div className="grid grid-cols-2 gap-4">
-                <Input
-                  label="CPF"
-                  placeholder="000.000.000-00"
-                  value={formData.cpf}
-                  onChange={(e: any) => setFormData({ ...formData, cpf: e.target.value })}
-                  required
-                />
                 <Input
                   label="WhatsApp"
                   placeholder="(00) 00000-0000"

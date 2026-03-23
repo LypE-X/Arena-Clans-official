@@ -7,7 +7,6 @@ export interface User {
   uid: string;
   name: string; // Titular
   email: string;
-  cpf: string;
   phone: string;
   phoneVerified: boolean;
   teamId?: string;

@@ -33,7 +33,6 @@ export const loginUser = async (email: string, password: string): Promise<User> 
     uid: userData.uid,
     name: userData.name,
     email: userData.email,
-    cpf: userData.cpf,
     phone: userData.phone,
     phoneVerified: userData.phone_verified,
     teamId: userData.team_id
@@ -58,7 +57,6 @@ export const registerUser = async (data: any): Promise<User> => {
     .from("users")
     .update({
       name: data.name,
-      cpf: data.cpf,
       phone: data.phone
     })
     .eq("uid", uid);
@@ -69,7 +67,6 @@ export const registerUser = async (data: any): Promise<User> => {
     uid,
     name: data.name,
     email: data.email,
-    cpf: data.cpf,
     phone: data.phone,
     phoneVerified: false
   };
@@ -99,7 +96,6 @@ export const getCurrentUser = async (): Promise<User | null> => {
     uid: userData.uid,
     name: userData.name,
     email: userData.email,
-    cpf: userData.cpf,
     phone: userData.phone,
     phoneVerified: userData.phone_verified,
     teamId: userData.team_id
