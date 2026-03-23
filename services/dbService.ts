@@ -28,7 +28,7 @@ export const loginUser = async (email: string, password: string): Promise<User> 
 
   const { data: userData, error: dbError } = await supabase
     .from("users")
-    .select("*")
+    .select("*, welcome_sent")
     .eq("uid", uid)
     .single();
 
@@ -40,7 +40,8 @@ export const loginUser = async (email: string, password: string): Promise<User> 
     email: userData.email,
     phone: userData.phone,
     phoneVerified: userData.phone_verified,
-    teamId: userData.team_id
+    teamId: userData.team_id,
+    welcome_sent: userData.welcome_sent // ✨ Adicionado ao retorno
   };
 };
 
@@ -89,7 +90,9 @@ export const getCurrentUser = async (): Promise<User | null> => {
     email: userData.email,
     phone: userData.phone,
     phoneVerified: userData.phone_verified,
-    teamId: userData.team_id
+    teamId: userData.team_id,
+    welcome_sent: userData.welcome_sent
+    
   };
 };
 

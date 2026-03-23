@@ -10,6 +10,7 @@ export interface User {
   phone: string;
   phoneVerified: boolean;
   teamId?: string;
+  welcome_sent: boolean;
 }
 
 export interface Team {

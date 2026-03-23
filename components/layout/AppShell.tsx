@@ -44,22 +44,34 @@ export default function AppShell({ children }: AppShellProps) {
 
   const router = useRouter();
 
-
-
   const refreshNotifications = () => {
     setNotificationVersion((v) => v + 1);
   };
 
+  // ✨ NOVA LÓGICA DE BOAS-VINDAS (Baseada no Banco de Dados)
   useEffect(() => {
-    if (!user) return;
-
-    const key = `welcomeSeen_${user.uid}`;
-
-    if (!localStorage.getItem(key)) {
+    // Só dispara se o usuário estiver logado e a coluna welcome_sent for explicitamente false
+    if (user && (user as any).welcome_sent === false) {
       setShowWelcome(true);
-      localStorage.setItem(key, 'true');
     }
   }, [user]);
+
+  const handleCloseWelcome = async () => {
+    setShowWelcome(false);
+
+    if (user) {
+      // 🛡️ Atualiza no banco para nunca mais mostrar, independente do PC ou Cache
+      const { error } = await supabase
+        .from('users')
+        .update({ welcome_sent: true })
+        .eq('uid', user.uid);
+
+      if (!error) {
+        // Atualiza o estado local do usuário para refletir a mudança
+        setUser({ ...user, welcome_sent: true } as any);
+      }
+    }
+  };
 
   // 1️⃣ carregar sessão inicial
   useEffect(() => {
@@ -71,8 +83,6 @@ export default function AppShell({ children }: AppShellProps) {
 
     loadUser();
   }, []);
-
-
 
   const openChat = async (teamId: string) => {
     if (!user || !user.teamId) return;
@@ -125,7 +135,10 @@ export default function AppShell({ children }: AppShellProps) {
           />
         )}
 
-        {showWelcome && <WelcomeModal open={showWelcome} onClose={() => setShowWelcome(false)} />}
+        {/* ✅ Modal agora usa a função handleCloseWelcome para salvar no banco */}
+        {showWelcome && (
+          <WelcomeModal open={showWelcome} onClose={handleCloseWelcome} />
+        )}
 
         {showLogoutConfirm && (
           <div className="fixed inset-0 z-[99999] bg-black/70 flex items-center justify-center p-4">
@@ -165,4 +178,3 @@ export default function AppShell({ children }: AppShellProps) {
     </AppContext.Provider>
   );
 }
-
