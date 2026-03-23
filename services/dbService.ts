@@ -19,6 +19,11 @@ export const loginUser = async (email: string, password: string): Promise<User> 
 
   if (error) throw new Error(error.message);
 
+  // 🔒 bloqueia login sem confirmação
+  if (!data.user.email_confirmed_at) {
+    throw new Error("Confirme seu email antes de fazer login.");
+  }
+
   const uid = data.user.id;
 
   const { data: userData, error: dbError } = await supabase
@@ -40,36 +45,22 @@ export const loginUser = async (email: string, password: string): Promise<User> 
 };
 
 
-export const registerUser = async (data: any): Promise<User> => {
-
-  const { data: authData, error } = await supabase.auth.signUp({
+export const registerUser = async (data: any): Promise<void> => {
+  const { error } = await supabase.auth.signUp({
     email: data.email,
-    password: data.password
+    password: data.password,
+    options: {
+      // 💡 Os dados dentro de 'data' vão para o 'raw_user_meta_data' que a Trigger lê
+      data: {
+        name: data.name,
+        phone: data.phone
+      }
+    }
   });
 
   if (error) throw new Error(error.message);
 
-  const uid = authData.user?.id;
-
-  if (!uid) throw new Error("Erro ao criar usuário");
-
-  const { error: updateError } = await supabase
-    .from("users")
-    .update({
-      name: data.name,
-      phone: data.phone
-    })
-    .eq("uid", uid);
-
-  if (updateError) throw new Error(updateError.message);
-
-  return {
-    uid,
-    name: data.name,
-    email: data.email,
-    phone: data.phone,
-    phoneVerified: false
-  };
+  // ✅ Removido o código de upsert manual! O banco cuida disso agora.
 };
 
 

@@ -29,33 +29,45 @@ const AuthPage = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
     try {
-      let user: User;
       if (mode === 'login') {
-        user = await db.loginUser(formData.email, formData.password);
+        const user = await db.loginUser(formData.email, formData.password);
+        setUser(user);
+        router.push('/');
       } else {
         if (!formData.name || !formData.phone) {
           throw new Error('Preencha todos os campos obrigatórios.');
         }
-
         if (formData.name.length > 50) {
           throw new Error('Nome deve ter no máximo 50 caracteres.');
         }
 
-        user = await db.registerUser(formData);
+        await db.registerUser(formData);
+
+        setSuccess("Cadastro realizado! Enviamos um link de confirmação para o seu e-mail.");
+        setError('');
+        // Mantemos o email no formData apenas para exibir na mensagem de sucesso, se desejar
       }
-      setUser(user);
-      router.push('/');
     } catch (err: any) {
       setError(err.message || 'Ocorreu um erro.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, '').slice(0, 11);
+    if (numbers.length === 0) return '';
+    if (numbers.length < 3) return numbers;
+    if (numbers.length < 8) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
   };
 
   return (
@@ -73,76 +85,104 @@ const AuthPage = () => {
 
       <Card className="w-full max-w-md border-dark-700 bg-dark-900 shadow-2xl">
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-white">{mode === 'login' ? 'Entrar na Arena' : 'Crie sua conta'}</h2>
+          <h2 className="text-2xl font-bold text-white">
+            {mode === 'login' ? 'Entrar na Arena' : 'Crie sua conta'}
+          </h2>
           <p className="text-gray-400 text-sm mt-1">
             {mode === 'login' ? 'Acesse para gerenciar sua equipe' : 'Conecte-se aos melhores times'}
           </p>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-900/20 border border-red-900 rounded text-red-200 text-sm">{error}</div>
+          <div className="mb-4 p-3 bg-red-900/20 border border-red-900 rounded text-red-200 text-sm">
+            {error}
+          </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {mode === 'register' && (
-            <>
-              <Input
-                label="Nome Completo"
-                placeholder="Seu nome real"
-                value={formData.name}
-                onChange={(e: any) => setFormData({ ...formData, name: e.target.value })}
-                maxLength={50}
-                required
-              />
-              <div className="grid grid-cols-2 gap-4">
+        {success && (
+          <div className="mb-4 p-4 bg-[#21ff21]/10 border border-[#21ff21]/50 rounded text-[#21ff21] text-sm animate-pulse">
+            <div className="flex items-center mb-2">
+              <span className="text-lg mr-2">✉️</span>
+              <span className="font-bold">Verifique seu e-mail!</span>
+            </div>
+            <p className="text-gray-300">
+              Enviamos um link de confirmação para <strong className="text-white">{formData.email}</strong>.
+              Confirme para liberar seu acesso.
+            </p>
+            <button
+              onClick={() => { setSuccess(''); router.push('/auth?mode=login'); }}
+              className="mt-3 text-white text-xs font-bold underline hover:text-[#21ff21] transition-colors"
+            >
+              Ir para a tela de login →
+            </button>
+          </div>
+        )}
+
+        {!success && (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {mode === 'register' && (
+              <>
+                <Input
+                  label="Nome Completo"
+                  placeholder="Seu nome real"
+                  value={formData.name}
+                  onChange={(e: any) => setFormData({ ...formData, name: e.target.value })}
+                  maxLength={50}
+                  required
+                />
                 <Input
                   label="WhatsApp"
                   placeholder="(00) 00000-0000"
                   value={formData.phone}
-                  onChange={(e: any) => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={(e: any) =>
+                    setFormData({
+                      ...formData,
+                      phone: formatPhone(e.target.value)
+                    })
+                  }
                   required
                 />
-              </div>
-            </>
-          )}
-          <Input
-            label="E-mail"
-            type="email"
-            placeholder="seu@email.com"
-            value={formData.email}
-            onChange={(e: any) => setFormData({ ...formData, email: e.target.value })}
-            required
-          />
-          <Input
-            label="Senha"
-            type="password"
-            placeholder="••••••••"
-            value={formData.password}
-            onChange={(e: any) => setFormData({ ...formData, password: e.target.value })}
-            required
-          />
+              </>
+            )}
+            <Input
+              label="E-mail"
+              type="email"
+              placeholder="seu@email.com"
+              value={formData.email}
+              onChange={(e: any) => setFormData({ ...formData, email: e.target.value })}
+              required
+            />
+            <Input
+              label="Senha"
+              type="password"
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={(e: any) => setFormData({ ...formData, password: e.target.value })}
+              required
+            />
 
-          <Button
-            type="submit"
-            className="w-full !bg-[#21ff21] hover:!bg-[#16cc16] !text-black !shadow-[#21ff21]/50 !border-none text-black"
-            disabled={loading}
-          >
-            {loading ? 'Processando...' : mode === 'login' ? 'Entrar' : 'Cadastrar'}
-          </Button>
-        </form>
+            <Button
+              type="submit"
+              className="w-full !bg-[#21ff21] hover:!bg-[#16cc16] !text-black !shadow-[#21ff21]/50 !border-none"
+              disabled={loading}
+            >
+              {loading ? 'Processando...' : mode === 'login' ? 'Entrar' : 'Cadastrar'}
+            </Button>
+          </form>
+        )}
 
         <div className="mt-6 text-center text-sm text-gray-400">
           {mode === 'login' ? (
             <>
               Não tem conta?{' '}
-              <Link href="/auth?mode=register" className="text-[#21ff21] hover:underline font-medium">
+              <Link href="/auth?mode=register" onClick={() => { setSuccess(''); setError('') }} className="text-[#21ff21] hover:underline font-medium">
                 Cadastre-se
               </Link>
             </>
           ) : (
             <>
               Já tem conta?{' '}
-              <Link href="/auth?mode=login" className="text-[#21ff21] hover:underline font-medium">
+              <Link href="/auth?mode=login" onClick={() => { setSuccess(''); setError('') }} className="text-[#21ff21] hover:underline font-medium">
                 Faça login
               </Link>
             </>
@@ -156,4 +196,3 @@ const AuthPage = () => {
 };
 
 export default AuthPage;
-
