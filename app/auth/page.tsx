@@ -190,7 +190,34 @@ const AuthPage = () => {
         </div>
       </Card>
 
-      <p className="mt-8 text-xs text-gray-600">MVP Demo • ARENA-CLANS</p>
+      <div className="mt-16 flex flex-col items-center gap-4 animate-pulse duration-[5000ms]">
+        <div className="flex flex-col items-center group">
+          {/* Texto de suporte maior e com espaçamento elegante */}
+          <p className="text-[11px] uppercase tracking-[0.4em] text-gray-500 font-bold mb-3 italic">
+            Developer
+          </p>
+
+          <div className="relative p-2">
+            {/* Brilho de fundo sutil para destacar o logo no dark mode */}
+            <div className="absolute inset-0 bg-white/5 blur-xl rounded-full scale-150 animate-pulse"></div>
+
+            {/* Logo da Kube Monkey - Tamanho Ampliado */}
+            <Image
+              src="/kube-logo.png"
+              alt="Kube Monkey Technology"
+              width={200} // Aumentado para dar mais presença
+              height={60}
+              className="relative z-10 object-contain brightness-110 contrast-125 transition-transform duration-700 hover:scale-110"
+            />
+          </div>
+
+          {/* Linha de separação com as cores da marca */}
+          <div className="flex gap-1 mt-4">
+            <div className="w-12 h-[2px] bg-[#002d5b]"></div> {/* Azul da Kube Monkey */}
+            <div className="w-12 h-[2px] bg-[#ffb400]"></div> {/* Amarelo da Kube Monkey */}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
