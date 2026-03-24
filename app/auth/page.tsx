@@ -73,10 +73,18 @@ const AuthPage = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
       <div className="relative flex items-center justify-center mb-6">
-        {/* O METEORO NEON (Passando por trás) */}
-        <span
-          className="absolute top-1/2 left-1/2 h-0.5 w-0.5 rotate-[215deg] animate-meteor-effect rounded-[9999px] bg-[#21ff21] shadow-[0_0_0_1px_#ffffff10,0_0_20px_10px_#21ff21] before:absolute before:top-1/2 before:w-[150px] before:h-[1px] before:-translate-y-[50%] before:bg-gradient-to-r before:from-[#21ff21] before:to-transparent"
-        ></span>
+        {/* ⬅️ RAIOS PARA A ESQUERDA */}
+        <span className="absolute top-1/2 left-1/2 h-0.5 w-0.5 rotate-[215deg] animate-meteor-effect rounded-[9999px] bg-[#21ff21] shadow-[0_0_20px_10px_#21ff21] before:absolute before:top-1/2 before:w-[150px] before:h-[1px] before:-translate-y-[50%] before:bg-gradient-to-r before:from-[#21ff21] before:to-transparent"></span>
+
+        {/* Delay de -1.5s faz ele já começar no meio do caminho ou logo após o primeiro */}
+        <span className="absolute top-1/3 left-2/3 h-0.5 w-0.5 rotate-[215deg] animate-meteor-effect [animation-delay:-1.5s] rounded-[9999px] bg-[#21ff21] shadow-[0_0_20px_10px_#21ff21] before:absolute before:top-1/2 before:w-[150px] before:h-[1px] before:-translate-y-[50%] before:bg-gradient-to-r before:from-[#21ff21] before:to-transparent"></span>
+
+        {/* ➡️ RAIOS PARA A DIREITA */}
+        {/* Delay de -3s faz ele começar imediatamente no carregamento */}
+        <span className="absolute top-1/2 right-1/2 h-0.5 w-0.5 rotate-[-45deg] animate-meteor-reverse [animation-delay:-3s] rounded-[9999px] bg-[#21ff21] shadow-[0_0_20px_10px_#21ff21] before:absolute before:top-1/2 before:w-[150px] before:h-[1px] before:-translate-y-[50%] before:bg-gradient-to-r before:from-[#21ff21] before:to-transparent"></span>
+
+        {/* Delay de -4.5s garante que ele não fique travado no topo */}
+        
 
         {/* Aura fixa pulsante */}
         <div className="absolute w-40 h-40 rounded-full bg-[#21ff21]/20 blur-3xl animate-pulse duration-[4000ms]"></div>

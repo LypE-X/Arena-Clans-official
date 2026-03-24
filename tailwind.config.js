@@ -31,14 +31,17 @@ module.exports = {
         meteor: {
           "0%": { transform: "rotate(215deg) translateX(0)", opacity: "1" },
           "70%": { opacity: "1" },
-          "100%": {
-            transform: "rotate(215deg) translateX(-1000px)",
-            opacity: "0",
-          },
+          "100%": { transform: "rotate(215deg) translateX(-1000px)", opacity: "0" },
+        },
+        meteorReverse: {
+          "0%": { transform: "rotate(-45deg) translateX(0)", opacity: "1" }, // ✨ Ângulo ajustado
+          "70%": { opacity: "1" },
+          "100%": { transform: "rotate(-45deg) translateX(-1000px)", opacity: "0" }, // ✨ Sentido ajustado
         },
       },
       animation: {
         "meteor-effect": "meteor 5s linear infinite",
+        "meteor-reverse": "meteorReverse 5s linear infinite", // ✨ Adicione esta linha
       },
     },
   },
