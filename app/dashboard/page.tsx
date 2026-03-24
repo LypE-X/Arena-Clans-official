@@ -184,10 +184,26 @@ const DashboardPage = () => {
               {user?.teamId !== team.id && (
                 <div className="absolute bottom-4 right-6 z-10">
                   <Button
-                    className="bg-[#21ff21] text-black hover:bg-[#16cc16] text-xs py-1 px-3 shadow-none"
+                    className="!bg-[#21ff21] !text-black hover:!bg-[#16cc16] text-[10px] font-black uppercase py-1.5 px-4 !border-none shadow-[0_0_15px_rgba(33,255,33,0.3)] transition-all active:scale-95 flex items-center gap-2 group"
                     onClick={() => handleChallenge(team.id)}
                   >
-                    🥊 Desafiar
+                    {/* Ícone de Espadas Cruzadas (SVG Customizado) */}
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="w-3.5 h-3.5 transition-transform duration-300 group-hover:rotate-12"
+                    >
+                      <path d="M14.5 17.5L3 6V3h3l11.5 11.5" />
+                      <path d="M13 19l6 2 3-3-2-6" />
+                      <path d="M9.5 17.5L21 6V3h-3L6.5 14.5" />
+                      <path d="M11 19l-6 2-3-3 2-6" />
+                    </svg>
+
+                    <span className="tracking-wider">DESAFIAR</span>
                   </Button>
                 </div>
               )}
