@@ -73,13 +73,20 @@ const AuthPage = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
       <div className="relative flex items-center justify-center mb-6">
-        <div className="absolute w-40 h-40 rounded-full bg-[#21ff21]/30 blur-2xl animate-pulse"></div>
+        {/* O METEORO NEON (Passando por trás) */}
+        <span
+          className="absolute top-1/2 left-1/2 h-0.5 w-0.5 rotate-[215deg] animate-meteor-effect rounded-[9999px] bg-[#21ff21] shadow-[0_0_0_1px_#ffffff10,0_0_20px_10px_#21ff21] before:absolute before:top-1/2 before:w-[150px] before:h-[1px] before:-translate-y-[50%] before:bg-gradient-to-r before:from-[#21ff21] before:to-transparent"
+        ></span>
+
+        {/* Aura fixa pulsante */}
+        <div className="absolute w-40 h-40 rounded-full bg-[#21ff21]/20 blur-3xl animate-pulse duration-[4000ms]"></div>
+
         <Image
           src="/logo.png"
           alt="Arena Clans Logo"
           width={160}
           height={160}
-          className="relative z-10 drop-shadow-[0_0_25px_#21ff21]"
+          className="relative z-10 drop-shadow-[0_0_20px_#21ff21]"
         />
       </div>
 
