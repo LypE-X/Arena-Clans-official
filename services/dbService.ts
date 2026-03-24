@@ -92,7 +92,7 @@ export const getCurrentUser = async (): Promise<User | null> => {
     phoneVerified: userData.phone_verified,
     teamId: userData.team_id,
     welcome_sent: userData.welcome_sent
-    
+
   };
 };
 
@@ -600,6 +600,43 @@ export const getInbox = async (teamId: string) => {
 
   return Array.from(interactions.values());
 };
+
+// Função para atualizar os dados (E-mail, Senha, Telefone)
+export const updateAccount = async (uid: string, data: any) => {
+  // 1. Se tiver senha, atualiza no Auth do Supabase
+  if (data.password) {
+    const { error: authError } = await supabase.auth.updateUser({
+      password: data.password
+    });
+    if (authError) throw authError;
+  }
+
+  // 2. Atualiza o telefone na sua tabela pública
+  const { error: dbError } = await supabase
+    .from('users')
+    .update({
+      phone: data.phone
+    })
+    .eq('uid', uid);
+
+  if (dbError) throw dbError;
+};
+
+// ✨ ESTA É A FUNÇÃO QUE ESTÁ FALTANDO NO SEU ERRO:
+export const deleteUserAccount = async (uid: string): Promise<void> => {
+  // 1. Remove os dados da tabela pública (O CASCADE no banco cuidará do resto)
+  const { error } = await supabase
+    .from("users")
+    .delete()
+    .eq("uid", uid);
+
+  if (error) throw new Error(error.message);
+
+  // 2. Faz o logout do usuário
+  await supabase.auth.signOut();
+};
+
+
 
 
 
