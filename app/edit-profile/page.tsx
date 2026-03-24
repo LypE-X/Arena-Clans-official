@@ -84,16 +84,16 @@ export default function EditProfilePage() {
                     <div className="h-px bg-dark-800 my-6"></div>
 
                     <Input
-                        label="WhatsApp"
+                        label="Alterar WhatsApp"
                         placeholder="(00) 00000-0000"
                         value={formData.phone}
                         onChange={(e: any) => setFormData({ ...formData, phone: e.target.value })}
                     />
 
                     <Input
-                        label="Nova Senha"
+                        label="Alterar Senha"
                         type="password"
-                        placeholder="Opcional"
+                        placeholder="Nova senha"
                         value={formData.newPassword}
                         onChange={(e: any) => setFormData({ ...formData, newPassword: e.target.value })}
                     />
