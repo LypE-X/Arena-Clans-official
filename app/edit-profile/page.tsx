@@ -18,23 +18,52 @@ export default function EditProfilePage() {
         name: user?.name || '',
         email: user?.email || '',
         phone: user?.phone || '',
-        password: '',
+        currentPassword: '', // ✨ Obrigatória para qualquer ação
+        newPassword: '',
     });
 
+    // 2. No handleSubmit (Atualizar)
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!formData.currentPassword) return alert("Digite sua senha atual para salvar.");
+
         setLoading(true);
         try {
-            // Atualiza apenas Telefone e/ou Senha
-            await db.updateAccount(user!.uid, {
-                phone: formData.phone,
-                password: formData.password
-            });
+            await db.updateAccount(user!.uid, formData);
             alert("Dados atualizados com sucesso!");
+            setFormData(prev => ({ ...prev, currentPassword: '', newPassword: '' })); // Limpa senhas
         } catch (err: any) {
             alert(err.message);
         } finally {
             setLoading(false);
+        }
+    };
+
+    // 3. Na Função de Deletar (Modal)
+    const handleDeleteAccount = async () => {
+        // 🛡️ TRAVA DE SEGURANÇA
+        if (!formData.currentPassword) {
+            alert("Por favor, digite sua senha atual no campo de confirmação antes de excluir a conta.");
+            return;
+        }
+
+        try {
+            setLoading(true);
+
+            // 1. Valida se a senha digitada está correta
+            await db.verifyCurrentPassword(formData.email, formData.currentPassword);
+
+            // 2. Se a senha estiver ok, procede com a deleção
+            await db.deleteUserAccount(user!.uid);
+
+            // 3. Limpa o sistema
+            setUser(null);
+            router.push('/auth?mode=register');
+        } catch (err: any) {
+            alert("Erro ao deletar: " + err.message);
+        } finally {
+            setLoading(false);
+            setShowDeleteConfirm(false);
         }
     };
 
@@ -64,10 +93,24 @@ export default function EditProfilePage() {
                     <Input
                         label="Nova Senha"
                         type="password"
-                        placeholder="Deixe em branco para manter"
-                        value={formData.password}
-                        onChange={(e: any) => setFormData({ ...formData, password: e.target.value })}
+                        placeholder="Opcional"
+                        value={formData.newPassword}
+                        onChange={(e: any) => setFormData({ ...formData, newPassword: e.target.value })}
                     />
+
+                    <div className="bg-dark-800/50 p-4 rounded-xl border border-[#21ff21]/10 mb-6">
+                        <Input
+                            label="Confirmar com Senha Atual"
+                            type="password"
+                            placeholder="SENHA"
+                            value={formData.currentPassword}
+                            onChange={(e: any) => setFormData({ ...formData, currentPassword: e.target.value })}
+                            required
+                        />
+                        <p className="text-[9px] text-gray-500 mt-2 uppercase tracking-widest">
+                            Obrigatório para atualizar dados ou excluir conta
+                        </p>
+                    </div>
 
                     <Button type="submit" className="w-full !bg-[#21ff21] !text-black font-black uppercase tracking-widest text-xs py-3" disabled={loading}>
                         {loading ? 'SALVANDO...' : 'ATUALIZAR DADOS'}
@@ -101,22 +144,15 @@ export default function EditProfilePage() {
 
                         <div className="flex flex-col gap-3">
                             <Button
-                                onClick={async () => {
-                                    try {
-                                        setLoading(true);
-                                        await db.deleteUserAccount(user!.uid);
-                                        setUser(null);
-                                        router.push('/auth?mode=register');
-                                    } catch (err: any) {
-                                        alert("Erro ao deletar: " + err.message);
-                                        setLoading(false);
-                                    }
-                                }}
-                                className="!bg-red-600 !text-white hover:!bg-red-500 font-black py-3 !border-none"
+                                onClick={handleDeleteAccount}
+                                className="!bg-red-600 !text-white hover:!bg-red-500 font-black py-3 !border-none shadow-lg shadow-red-600/20"
+                                disabled={loading}
                             >
-                                SIM, DELETAR CONTA
+                                {loading ? 'DELETANDO...' : 'SIM, DELETAR CONTA'}
                             </Button>
+
                             <button
+                                type="button"
                                 onClick={() => setShowDeleteConfirm(false)}
                                 className="text-gray-500 hover:text-white text-xs font-bold py-2"
                             >

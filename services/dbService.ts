@@ -601,27 +601,6 @@ export const getInbox = async (teamId: string) => {
   return Array.from(interactions.values());
 };
 
-// Função para atualizar os dados (E-mail, Senha, Telefone)
-export const updateAccount = async (uid: string, data: any) => {
-  // 1. Se tiver senha, atualiza no Auth do Supabase
-  if (data.password) {
-    const { error: authError } = await supabase.auth.updateUser({
-      password: data.password
-    });
-    if (authError) throw authError;
-  }
-
-  // 2. Atualiza o telefone na sua tabela pública
-  const { error: dbError } = await supabase
-    .from('users')
-    .update({
-      phone: data.phone
-    })
-    .eq('uid', uid);
-
-  if (dbError) throw dbError;
-};
-
 // ✨ ESTA É A FUNÇÃO QUE ESTÁ FALTANDO NO SEU ERRO:
 export const deleteUserAccount = async (uid: string): Promise<void> => {
   // 1. Remove os dados da tabela pública (O CASCADE no banco cuidará do resto)
@@ -634,6 +613,36 @@ export const deleteUserAccount = async (uid: string): Promise<void> => {
 
   // 2. Faz o logout do usuário
   await supabase.auth.signOut();
+};
+
+export const verifyCurrentPassword = async (email: string, password: string) => {
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+  if (error) throw new Error("Senha atual incorreta.");
+  return true;
+};
+
+export const updateAccount = async (uid: string, data: any) => {
+  // 1. Validar a senha atual antes de qualquer mudança
+  await verifyCurrentPassword(data.email, data.currentPassword);
+
+  // 2. Se tiver nova senha, atualiza no Auth
+  if (data.newPassword) {
+    const { error: authError } = await supabase.auth.updateUser({
+      password: data.newPassword
+    });
+    if (authError) throw authError;
+  }
+
+  // 3. Atualiza o telefone na tabela pública
+  const { error: dbError } = await supabase
+    .from('users')
+    .update({ phone: data.phone })
+    .eq('uid', uid);
+
+  if (dbError) throw dbError;
 };
 
 
