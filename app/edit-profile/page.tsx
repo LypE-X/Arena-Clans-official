@@ -71,8 +71,8 @@ export default function EditProfilePage() {
         <div className="max-w-md mx-auto px-4 py-12">
             <Card className="border-dark-700 bg-dark-900 shadow-2xl">
                 <div className="text-center mb-8">
-                    <h1 className="text-2xl font-black text-white uppercase tracking-tighter">Minha Conta</h1>
-                    <p className="text-gray-500 text-[10px] uppercase tracking-widest mt-1">Gerencie seu acesso</p>
+                <h2 className="text-3xl font-bold text-white">Minha Conta</h2>
+                    <p className="text-gray-500 text-[13px] uppercase tracking-widest mt-1">Gerencie seu acesso</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
@@ -107,7 +107,7 @@ export default function EditProfilePage() {
                             onChange={(e: any) => setFormData({ ...formData, currentPassword: e.target.value })}
                             required
                         />
-                        <p className="text-[9px] text-gray-500 mt-2 uppercase tracking-widest">
+                        <p className="text-[12px] text-white-500 mt-2 uppercase tracking-widest">
                             Obrigatório para atualizar dados ou excluir conta
                         </p>
                     </div>
