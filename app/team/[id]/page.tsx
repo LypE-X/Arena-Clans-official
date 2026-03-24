@@ -155,35 +155,55 @@ const TeamProfilePage = () => {
             </div>
             <p className="text-gray-300 max-w-2xl">{team.description}</p>
           </div>
+
           <div className="flex flex-col gap-3 min-w-[200px]">
             {isMyTeam ? (
               <>
                 <Button
-                  className="bg-[#21ff21] text-black hover:bg-[#16cc16] w-full"
+                  className="!bg-[#21ff21] !text-black hover:!bg-[#16cc16] w-full font-black uppercase text-[10px] tracking-widest !border-none shadow-[0_0_15px_rgba(33,255,33,0.3)] flex items-center justify-center gap-2 group"
                   onClick={() => router.push(`/edit-team/${team.id}`)}
                 >
-                  ✏️ Editar Perfil
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5 transition-transform group-hover:rotate-12">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                  </svg>
+                  EDITAR PERFIL
                 </Button>
+
                 <Button
-                  className="bg-[#21ff21] text-black hover:bg-[#16cc16] w-full"
+                  className="!bg-[#21ff21] !text-black hover:!bg-[#16cc16] w-full font-black uppercase text-[10px] tracking-widest !border-none shadow-[0_0_15px_rgba(33,255,33,0.3)] flex items-center justify-center gap-2"
                   onClick={() => setShowInbox(true)}
                 >
-                  📨 Ver Mensagens
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                    <polyline points="22,6 12,13 2,6" />
+                  </svg>
+                  VER MENSAGENS
                 </Button>
               </>
             ) : (
               <>
                 {user?.teamId && (
-                  <Button onClick={() => openChat(team.id)} className="w-full">
-                    🥊 Enviar Mensagem
+                  <Button
+                    onClick={() => openChat(team.id)}
+                    className="!bg-[#21ff21] !text-black hover:!bg-[#16cc16] w-full font-black uppercase text-[10px] tracking-widest !border-none shadow-[0_0_15px_rgba(33,255,33,0.3)] flex items-center justify-center gap-2"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5">
+                      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-11.7 8.5 8.5 0 0 1 4.7 1.4L22 3l-1.5 6.5z" />
+                    </svg>
+                    ENVIAR MENSAGEM
                   </Button>
                 )}
+
                 {user?.teamId && (
                   <Button
-                    className="bg-[#21ff21] text-black hover:bg-[#16cc16] w-full"
+                    className="!bg-[#21ff21] !text-black hover:!bg-[#16cc16] w-full font-black uppercase text-[10px] tracking-widest !border-none shadow-[0_0_15px_rgba(33,255,33,0.3)] flex items-center justify-center gap-2"
                     onClick={() => setShowReview(true)}
                   >
-                    {myReview ? '✏️ Editar Avaliação' : '⭐ Avaliar Equipe'}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                    </svg>
+                    {myReview ? 'EDITAR AVALIAÇÃO' : 'AVALIAR EQUIPE'}
                   </Button>
                 )}
               </>
@@ -191,10 +211,15 @@ const TeamProfilePage = () => {
 
             {!isMyTeam && user?.teamId && (
               <Button
-                className="bg-[#21ff21] text-black hover:bg-[#16cc16] w-full"
+                className="!bg-red-600 !text-white hover:!bg-red-500 w-full font-black uppercase text-[10px] tracking-widest !border-none shadow-[0_0_15px_rgba(220,38,38,0.3)] flex items-center justify-center gap-2 mt-4"
                 onClick={() => setShowReport(true)}
               >
-                🚨 Reportar Equipe
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                  <line x1="12" y1="9" x2="12" y2="13" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+                REPORTAR EQUIPE
               </Button>
             )}
           </div>
