@@ -54,7 +54,7 @@ const DashboardPage = () => {
       await db.sendMessage(
         user.teamId,
         teamId,
-        'Olá! Vamos marcar um treino?',
+        'Disponível para um amistoso?',
         user.uid
       );
     }
