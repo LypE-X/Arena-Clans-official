@@ -21,7 +21,6 @@ export interface Team {
   region: {
     country: string;
     state: string;
-    city: string;
   };
   description: string;
   photoUrl: string;

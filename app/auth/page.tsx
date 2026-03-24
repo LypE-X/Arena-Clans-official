@@ -24,7 +24,6 @@ const AuthPage = () => {
     email: '',
     password: '',
     phone: '',
-    city: '',
     state: '',
   });
   const [loading, setLoading] = useState(false);

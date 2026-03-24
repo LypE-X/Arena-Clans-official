@@ -111,7 +111,6 @@ export const createTeam = async (user: User, data: Partial<Team>): Promise<Team>
       game: data.game,
       country: data.region?.country,
       state: data.region?.state,
-      city: data.region?.city,
       description: data.description,
       photo_url: data.photoUrl
     })
@@ -133,7 +132,6 @@ export const createTeam = async (user: User, data: Partial<Team>): Promise<Team>
     region: {
       country: team.country,
       state: team.state,
-      city: team.city
     },
     description: team.description,
     photoUrl: team.photo_url,
@@ -152,7 +150,6 @@ export const updateTeam = async (teamId: string, updates: Partial<Team>): Promis
       game: updates.game,
       country: updates.region?.country,
       state: updates.region?.state,
-      city: updates.region?.city,
       description: updates.description,
       photo_url: updates.photoUrl
     })
@@ -170,7 +167,6 @@ export const updateTeam = async (teamId: string, updates: Partial<Team>): Promis
     region: {
       country: data.country,
       state: data.state,
-      city: data.city
     },
     description: data.description,
     photoUrl: data.photo_url,
@@ -217,7 +213,6 @@ export const getTeams = async (filters?: {
     region: {
       country: team.country,
       state: team.state,
-      city: team.city
     },
     description: team.description,
     photoUrl: team.photo_url,
@@ -245,7 +240,6 @@ export const getTeamById = async (id: string): Promise<Team | null> => {
     region: {
       country: data.country,
       state: data.state,
-      city: data.city
     },
     description: data.description,
     photoUrl: data.photo_url,

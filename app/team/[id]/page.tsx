@@ -143,7 +143,7 @@ const TeamProfilePage = () => {
             <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-4">
               <Badge color="blue">{team.game}</Badge>
               <Badge color="gray">
-                {team.region.state} - {team.region.city}
+                {team.region.state}
               </Badge>
               <div className="flex items-center gap-1 text-[#21ff21]">
                 <Icons.Star fill />

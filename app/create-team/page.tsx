@@ -20,7 +20,7 @@ const CreateTeamPage = () => {
   const [formData, setFormData] = useState({
     name: '',
     game: GameType.VALORANT,
-    region: { country: 'Brasil', state: '', city: '' },
+    region: { country: 'Brasil', state: '' },
     description: '',
     photoUrl: '',
   });
@@ -132,15 +132,6 @@ const CreateTeamPage = () => {
                 ))}
               </select>
             </div>
-            <Input
-              label="Cidade"
-              placeholder="São Paulo"
-              value={formData.region.city}
-              onChange={(e: any) =>
-                setFormData({ ...formData, region: { ...formData.region, city: e.target.value } })
-              }
-              required
-            />
           </div>
 
           <div className="mb-4">
