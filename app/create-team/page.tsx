@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 
 import { GameType } from '../../types';
 import * as db from '../../services/dbService';
-import { generateTeamDescription } from '../../services/geminiService';
 import { BRAZIL_STATES } from '../../constants/brazilStates';
 import Card from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
@@ -25,15 +24,6 @@ const CreateTeamPage = () => {
     photoUrl: '',
   });
   const [loading, setLoading] = useState(false);
-  const [generating, setGenerating] = useState(false);
-
-  const handleGenerateBio = async () => {
-    if (!formData.name) return alert('Preencha o nome da equipe primeiro.');
-    setGenerating(true);
-    const bio = await generateTeamDescription(formData.name, formData.game, 'Competitivo/Tryhard');
-    setFormData((prev) => ({ ...prev, description: bio }));
-    setGenerating(false);
-  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -137,18 +127,11 @@ const CreateTeamPage = () => {
           <div className="mb-4">
             <div className="flex justify-between items-center mb-1">
               <label className="block text-sm font-medium text-gray-400">Descrição / Bio</label>
-              <button
-                type="button"
-                onClick={handleGenerateBio}
-                disabled={generating}
-                className="text-xs text-[#21ff21] hover:text-[#16cc16] flex items-center gap-1"
-              >
-                {generating ? 'Gerando...' : 'Gerar bio'}
-              </button>
             </div>
             <textarea
               rows={3}
               maxLength={MAX_DESC}
+              placeholder="Ex: Horários disponíveis para jogar"
               className="w-full bg-dark-900 border border-dark-800 rounded-lg p-2.5 text-white focus:ring-2 focus:ring-[#21ff21] outline-none"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
