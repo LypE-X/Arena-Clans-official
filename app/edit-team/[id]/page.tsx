@@ -16,6 +16,7 @@ const EditTeamPage = () => {
   const params = useParams<{ id: string }>();
   const id = params?.id;
   const router = useRouter();
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -39,12 +40,19 @@ const EditTeamPage = () => {
           router.push('/');
           return;
         }
+
+        // Se a foto não for Base64 (ou seja, for um caminho do storage), montamos a URL
+        let displayPhoto = team.photoUrl;
+        if (team.photoUrl && !team.photoUrl.startsWith('data:image')) {
+          displayPhoto = `https://supabase.co{team.photoUrl}`;
+        }
+
         setFormData({
           name: team.name,
           game: team.game,
           region: team.region,
           description: team.description,
-          photoUrl: team.photoUrl,
+          photoUrl: displayPhoto, // Usamos a URL completa apenas para o preview
         });
       }
       setLoading(false);
@@ -55,6 +63,7 @@ const EditTeamPage = () => {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setImageFile(file); // Salva o arquivo real para o upload
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData((prev) => ({ ...prev, photoUrl: reader.result as string }));
@@ -68,11 +77,28 @@ const EditTeamPage = () => {
     setLoading(true);
     try {
       if (id) {
-        await db.updateTeam(id as string, formData);
+        let finalPhotoPath = formData.photoUrl;
+
+        // Se o usuário selecionou um NOVO arquivo, fazemos o upload antes de salvar
+        if (imageFile) {
+          finalPhotoPath = await db.uploadTeamLogo(imageFile, id);
+        } else {
+          // Se ele não mudou a foto, precisamos garantir que enviamos apenas o NOME do arquivo
+          // e não a URL completa do Supabase que está no estado de preview
+          if (finalPhotoPath.includes('perfil_img/')) {
+            finalPhotoPath = finalPhotoPath.split('perfil_img/').pop() || '';
+          }
+        }
+
+        await db.updateTeam(id as string, {
+          ...formData,
+          photoUrl: finalPhotoPath
+        });
+
         router.push(`/team/${id}`);
       }
     } catch (err: any) {
-      alert(err.message);
+      alert("Erro ao atualizar: " + err.message);
     } finally {
       setLoading(false);
     }

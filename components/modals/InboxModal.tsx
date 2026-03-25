@@ -57,7 +57,13 @@ const InboxModal = ({
                 >
                   <div className="flex items-center gap-3">
                     <img
-                      src={otherTeam.photoUrl || '/logo.png'}
+                      src={
+                        !otherTeam.photoUrl
+                          ? '/logo.png'
+                          : otherTeam.photoUrl.startsWith('data:image')
+                            ? otherTeam.photoUrl
+                            : `https://cdhwjnecglzfetmvyrwk.supabase.co/storage/v1/object/public/perfil_img/${otherTeam.photoUrl}`
+                      }
                       alt=""
                       className="w-12 h-12 rounded-lg object-cover border border-[#21ff21]/30"
                     />

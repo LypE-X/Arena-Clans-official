@@ -16,6 +16,7 @@ const CreateTeamPage = () => {
   const router = useRouter();
 
   const MAX_DESC = 300;
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     game: GameType.VALORANT,
@@ -28,8 +29,10 @@ const CreateTeamPage = () => {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setImageFile(file); // Guarda o arquivo real para o upload
       const reader = new FileReader();
       reader.onloadend = () => {
+        // Mantemos isso apenas para o PREVIEW na tela
         setFormData((prev) => ({ ...prev, photoUrl: reader.result as string }));
       };
       reader.readAsDataURL(file);
@@ -44,11 +47,25 @@ const CreateTeamPage = () => {
     }
     setLoading(true);
     try {
-      const team = await db.createTeam(user, formData);
+      let finalPhotoUrl = '';
+
+      // 1. Criar o time primeiro para ter o ID (ou usar um ID temporário)
+      // Aqui criamos o time com a photoUrl vazia inicialmente
+      const team = await db.createTeam(user, { ...formData, photoUrl: '' });
+
+      // 2. Se o usuário selecionou uma imagem, faz o upload para o Bucket
+      if (imageFile) {
+        // Faz o upload e recebe o "caminho/nome-do-arquivo.png"
+        const storagePath = await db.uploadTeamLogo(imageFile, team.id);
+
+        // 3. Atualiza o time no banco com o caminho correto do Bucket
+        await db.updateTeam(team.id, { ...formData, photoUrl: storagePath });
+      }
+
       setUser({ ...user, teamId: team.id });
       router.push(`/team/${team.id}`);
     } catch (err: any) {
-      alert(err.message);
+      alert("Erro ao criar equipe: " + err.message);
     } finally {
       setLoading(false);
     }

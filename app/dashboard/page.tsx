@@ -22,6 +22,7 @@ const DashboardPage = () => {
   const [filterRating, setFilterRating] = React.useState(0);
   const [searchName, setSearchName] = React.useState('');
   const [loading, setLoading] = React.useState(true);
+  const BUCKET_URL = "https://supabase.co";
 
   React.useEffect(() => {
     const load = async () => {
@@ -160,7 +161,17 @@ const DashboardPage = () => {
               <Link href={`/team/${team.id}`} className="block h-full">
                 <Card className="h-full hover:border-[#21ff21]/50 transition-colors relative overflow-hidden pb-16">
                   <div className="flex items-start gap-4 mb-4">
-                    <img src={team.photoUrl || '/logo.png'} alt={team.name} className="w-16 h-16 rounded-lg object-cover bg-dark-900" />
+                    <img
+                      src={
+                        !team.photoUrl
+                          ? '/logo.png'
+                          : team.photoUrl.startsWith('data:image')
+                            ? team.photoUrl
+                            : `https://cdhwjnecglzfetmvyrwk.supabase.co/storage/v1/object/public/perfil_img/${team.photoUrl}`
+                      }
+                      alt={team.name}
+                      className="w-16 h-16 rounded-lg object-cover bg-dark-900"
+                    />
                     <div>
                       <h3 className="font-bold text-lg text-white group-hover:text-[#21ff21] transition-colors">
                         {team.name}

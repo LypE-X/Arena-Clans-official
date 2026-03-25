@@ -5,6 +5,7 @@ import * as db from '../../services/dbService';
 import { supabase } from '@/services/supabaseClient';
 import { Icons } from '../ui/Icons';
 import { createMessageNotificationAction } from "@/services/actions";
+export const BUCKET_URL = "https://supabase.co";
 
 
 const ChatModal = ({
@@ -27,6 +28,7 @@ const ChatModal = ({
   const [otherTeam, setOtherTeam] = useState<Team | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const [messagesCache, setMessagesCache] = useState<Record<string, any[]>>({});
+
 
   // Load team + messages
   useEffect(() => {
@@ -166,7 +168,13 @@ const ChatModal = ({
         >
           <div className="flex items-center gap-3">
             <img
-              src={otherTeam.photoUrl || '/logo.png'}
+              src={
+                !otherTeam.photoUrl
+                  ? '/logo.png'
+                  : otherTeam.photoUrl.startsWith('data:image')
+                    ? otherTeam.photoUrl
+                    : `https://cdhwjnecglzfetmvyrwk.supabase.co/storage/v1/object/public/perfil_img/${otherTeam.photoUrl}`
+              }
               alt={otherTeam.name}
               className="w-10 h-10 rounded-full object-cover border border-[#21ff21]"
             />

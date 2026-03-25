@@ -21,6 +21,7 @@ const TeamProfilePage = () => {
   const params = useParams<{ id: string }>();
   const id = params?.id;
   const router = useRouter();
+  const BUCKET_URL = "https://supabase.co";
 
   const [team, setTeam] = useState<Team | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -134,9 +135,15 @@ const TeamProfilePage = () => {
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#21ff21] to-[#16cc16]"></div>
         <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
           <img
-            src={team.photoUrl || '/logo.png'}
+            src={
+              !team.photoUrl
+                ? '/logo.png'
+                : team.photoUrl.startsWith('data:image')
+                  ? team.photoUrl
+                  : `https://cdhwjnecglzfetmvyrwk.supabase.co/storage/v1/object/public/perfil_img/${team.photoUrl}`
+            }
             alt={team.name}
-            className="w-32 h-32 md:w-36 md:h-36 rounded-xl object-cover border border-[#21ff21] shadow-2xl bg-dark-950"
+            className="w-16 h-16 rounded-lg object-cover bg-dark-900"
           />
           <div className="flex-1 text-center md:text-left">
             <h1 className="text-4xl font-bold text-white mb-2">{team.name}</h1>

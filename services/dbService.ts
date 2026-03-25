@@ -102,7 +102,6 @@ export const getCurrentUser = async (): Promise<User | null> => {
 // =============================
 
 export const createTeam = async (user: User, data: Partial<Team>): Promise<Team> => {
-
   const { data: team, error } = await supabase
     .from("teams")
     .insert({
@@ -112,7 +111,7 @@ export const createTeam = async (user: User, data: Partial<Team>): Promise<Team>
       country: data.region?.country,
       state: data.region?.state,
       description: data.description,
-      photo_url: data.photoUrl
+      photo_url: data.photoUrl // Aqui agora receberá o nome do arquivo do storage
     })
     .select()
     .single();
@@ -129,10 +128,7 @@ export const createTeam = async (user: User, data: Partial<Team>): Promise<Team>
     ownerUid: team.owner_uid,
     name: team.name,
     game: team.game,
-    region: {
-      country: team.country,
-      state: team.state,
-    },
+    region: { country: team.country, state: team.state },
     description: team.description,
     photoUrl: team.photo_url,
     rating: Number(team.rating || 0),
@@ -142,7 +138,6 @@ export const createTeam = async (user: User, data: Partial<Team>): Promise<Team>
 
 
 export const updateTeam = async (teamId: string, updates: Partial<Team>): Promise<Team> => {
-
   const { data, error } = await supabase
     .from("teams")
     .update({
@@ -151,7 +146,7 @@ export const updateTeam = async (teamId: string, updates: Partial<Team>): Promis
       country: updates.region?.country,
       state: updates.region?.state,
       description: updates.description,
-      photo_url: updates.photoUrl
+      photo_url: updates.photoUrl // Recebe o path do storage
     })
     .eq("id", teamId)
     .select()
@@ -164,15 +159,30 @@ export const updateTeam = async (teamId: string, updates: Partial<Team>): Promis
     ownerUid: data.owner_uid,
     name: data.name,
     game: data.game,
-    region: {
-      country: data.country,
-      state: data.state,
-    },
+    region: { country: data.country, state: data.state },
     description: data.description,
     photoUrl: data.photo_url,
     rating: Number(data.rating || 0),
     totalReviews: Number(data.total_reviews || 0)
   };
+};
+
+export const uploadTeamLogo = async (file: File, teamId: string): Promise<string> => {
+  const fileExt = file.name.split('.').pop();
+  // Criamos um nome único para evitar cache do navegador ao atualizar a foto
+  const fileName = `${teamId}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+  const { data, error } = await supabase.storage
+    .from('perfil_img')
+    .upload(fileName, file, {
+      cacheControl: '3600',
+      upsert: true
+    });
+
+  if (error) throw new Error("Erro no upload: " + error.message);
+
+  // Retornamos apenas o nome do arquivo para salvar na coluna photo_url
+  return data.path;
 };
 
 
