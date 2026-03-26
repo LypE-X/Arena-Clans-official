@@ -78,7 +78,13 @@ const DashboardPage = () => {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-8 flex flex-col md:flex-row justify-between items-end gap-4">
         <div className="w-full">
-          <h1 className="text-4xl font-extrabold text-white mb-2 text-center">Escolha uma equipe e desafie!</h1>
+          <h1 className="text-6xl md:text-6xl font-bold text-center neon-text">
+            Painel de equipes
+          </h1>
+
+          <p className="text-center mt-3 text-gray-300 neon-sub">
+            Encontre um adversário
+          </p>
         </div>
       </div>
 
