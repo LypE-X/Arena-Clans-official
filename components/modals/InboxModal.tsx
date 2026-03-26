@@ -3,6 +3,7 @@ import React from 'react';
 import { Team, TeamMessage } from '../../types';
 import * as db from '../../services/dbService';
 import Button from '../ui/Button';
+import { getTeamImage } from '@/services/image'
 
 const InboxModal = ({
   open,
@@ -57,13 +58,7 @@ const InboxModal = ({
                 >
                   <div className="flex items-center gap-3">
                     <img
-                      src={
-                        !otherTeam.photoUrl
-                          ? '/logo.png'
-                          : otherTeam.photoUrl.startsWith('data:image')
-                            ? otherTeam.photoUrl
-                            : `https://cdhwjnecglzfetmvyrwk.supabase.co/storage/v1/object/public/perfil_img/${otherTeam.photoUrl}`
-                      }
+                      src={getTeamImage(otherTeam.photoUrl)}
                       alt=""
                       className="w-12 h-12 rounded-lg object-cover border border-[#21ff21]/30"
                     />

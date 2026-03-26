@@ -10,6 +10,7 @@ import Card from '../../../components/ui/Card';
 import Input from '../../../components/ui/Input';
 import Button from '../../../components/ui/Button';
 import { useAppContext } from '../../../components/layout/AppShell';
+import { getTeamImage } from '@/services/image'
 
 const EditTeamPage = () => {
   const { user } = useAppContext();
@@ -41,18 +42,12 @@ const EditTeamPage = () => {
           return;
         }
 
-        // Se a foto não for Base64 (ou seja, for um caminho do storage), montamos a URL
-        let displayPhoto = team.photoUrl;
-        if (team.photoUrl && !team.photoUrl.startsWith('data:image')) {
-          displayPhoto = `https://supabase.co{team.photoUrl}`;
-        }
-
         setFormData({
           name: team.name,
           game: team.game,
           region: team.region,
           description: team.description,
-          photoUrl: displayPhoto, // Usamos a URL completa apenas para o preview
+          photoUrl: team.photoUrl, // 👈 só o path mesmo
         });
       }
       setLoading(false);
@@ -138,7 +133,11 @@ const EditTeamPage = () => {
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-lg bg-dark-900 border border-dark-800 flex items-center justify-center overflow-hidden">
                 {formData.photoUrl ? (
-                  <img src={formData.photoUrl} alt="Preview" className="w-full h-full object-cover" />
+                  <img
+                    src={getTeamImage(formData.photoUrl)}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <span className="text-2xl">📷</span>
                 )}

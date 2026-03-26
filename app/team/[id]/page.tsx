@@ -15,6 +15,7 @@ import InboxModal from '../../../components/modals/InboxModal';
 import ReportModal from '../../../components/modals/ReportModal';
 import { useAppContext } from '../../../components/layout/AppShell';
 import { supabase } from '../../../services/supabaseClient';
+import { getTeamImage } from '@/services/image'
 
 const TeamProfilePage = () => {
   const { user, openChat } = useAppContext();
@@ -135,13 +136,7 @@ const TeamProfilePage = () => {
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#21ff21] to-[#16cc16]"></div>
         <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
           <img
-            src={
-              !team.photoUrl
-                ? '/logo.png'
-                : team.photoUrl.startsWith('data:image')
-                  ? team.photoUrl
-                  : `https://cdhwjnecglzfetmvyrwk.supabase.co/storage/v1/object/public/perfil_img/${team.photoUrl}`
-            }
+            src={getTeamImage(team.photoUrl)}
             alt={team.name}
             className="w-16 h-16 rounded-lg object-cover bg-dark-900"
           />

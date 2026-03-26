@@ -11,6 +11,7 @@ import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import { Icons } from '../../components/ui/Icons';
 import { useAppContext } from '../../components/layout/AppShell';
+import { getTeamImage } from '@/services/image'
 
 export const revalidate = 0;
 
@@ -162,13 +163,7 @@ const DashboardPage = () => {
                 <Card className="h-full hover:border-[#21ff21]/50 transition-colors relative overflow-hidden pb-16">
                   <div className="flex items-start gap-4 mb-4">
                     <img
-                      src={
-                        !team.photoUrl
-                          ? '/logo.png'
-                          : team.photoUrl.startsWith('data:image')
-                            ? team.photoUrl
-                            : `https://cdhwjnecglzfetmvyrwk.supabase.co/storage/v1/object/public/perfil_img/${team.photoUrl}`
-                      }
+                      src={getTeamImage(team.photoUrl)}
                       alt={team.name}
                       className="w-16 h-16 rounded-lg object-cover bg-dark-900"
                     />

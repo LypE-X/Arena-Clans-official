@@ -169,19 +169,20 @@ export const updateTeam = async (teamId: string, updates: Partial<Team>): Promis
 
 export const uploadTeamLogo = async (file: File, teamId: string): Promise<string> => {
   const fileExt = file.name.split('.').pop();
-  // Criamos um nome único para evitar cache do navegador ao atualizar a foto
-  const fileName = `${teamId}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+  // Nome FIXO baseado no ID do time. 
+  // Assim o 'upsert: true' encontrará o arquivo antigo e o substituirá.
+  const fileName = `${teamId}.${fileExt}`;
 
   const { data, error } = await supabase.storage
     .from('perfil_img')
     .upload(fileName, file, {
-      cacheControl: '3600',
+      cacheControl: '0', // '0' evita que o Supabase peça ao navegador para guardar cache
       upsert: true
     });
 
   if (error) throw new Error("Erro no upload: " + error.message);
 
-  // Retornamos apenas o nome do arquivo para salvar na coluna photo_url
   return data.path;
 };
 
