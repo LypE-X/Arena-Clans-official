@@ -1,10 +1,11 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icons } from '../ui/Icons';
 import * as db from '@/services/dbService';
 import { supabase } from '@/services/supabaseClient';
 import { markNotificationAsReadAction } from "@/services/actions";
+
 
 // Adicione onOpenChat nas Props
 export default function NotificationMenu({
@@ -16,6 +17,7 @@ export default function NotificationMenu({
 }) {
     const [notifications, setNotifications] = useState<any[]>([]);
     const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
 
     useEffect(() => {
@@ -40,6 +42,23 @@ export default function NotificationMenu({
         return () => { supabase.removeChannel(channel); };
     }, [userId]);
 
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                dropdownRef.current &&
+                !dropdownRef.current.contains(event.target as Node)
+            ) {
+                setIsOpen(false)
+            }
+        }
+
+        document.addEventListener('mousedown', handleClickOutside)
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+        }
+    }, [])
+
     const totalUnread = notifications.filter(n => !n.read).length;
 
     // Função de clique com roteamento inteligente
@@ -60,7 +79,7 @@ export default function NotificationMenu({
     };
 
     return (
-        <div className="relative">
+        <div ref={dropdownRef} className="relative">
             <button onClick={() => setIsOpen(!isOpen)} className="relative p-2 text-gray-400 hover:text-[#21ff21] transition">
                 <Icons.Bell />
                 {totalUnread > 0 && (
