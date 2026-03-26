@@ -16,6 +16,7 @@ import ReportModal from '../../../components/modals/ReportModal';
 import { useAppContext } from '../../../components/layout/AppShell';
 import { supabase } from '../../../services/supabaseClient';
 import { getTeamImage } from '@/services/image'
+import SkeletonTeamProfile from '@/components/ui/SkeletonTeamProfile'
 
 const TeamProfilePage = () => {
   const { user, openChat } = useAppContext();
@@ -128,7 +129,9 @@ const TeamProfilePage = () => {
   const avgComunicacao = total ? reviews.reduce((acc, r) => acc + r.comunicacao, 0) / total : 0;
   const avgPontualidade = total ? reviews.reduce((acc, r) => acc + r.pontualidade, 0) / total : 0;
 
-  if (!team) return <div className="text-center py-20">Equipe não encontrada.</div>;
+  if (!team) {
+    return <SkeletonTeamProfile />
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
