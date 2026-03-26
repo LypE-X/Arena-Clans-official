@@ -12,6 +12,7 @@ import Button from '../../components/ui/Button';
 import { Icons } from '../../components/ui/Icons';
 import { useAppContext } from '../../components/layout/AppShell';
 import { getTeamImage } from '@/services/image'
+import SkeletonTeamCard from '@/components/ui/SkeletonTeamCard'
 
 export const revalidate = 0;
 
@@ -146,7 +147,11 @@ const DashboardPage = () => {
       </div>
 
       {loading ? (
-        <div className="text-center py-20 text-gray-500">Carregando equipes...</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <SkeletonTeamCard key={i} />
+          ))}
+        </div>
       ) : filteredTeams.length === 0 ? (
         <div className="text-center py-20 bg-dark-800/20 rounded-xl border border-dashed border-dark-700">
           <p className="text-gray-400 text-lg">Nenhuma equipe encontrada com esses filtros.</p>
