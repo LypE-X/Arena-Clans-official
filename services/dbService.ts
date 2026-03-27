@@ -557,7 +557,7 @@ export const uploadReportFile = async (file: File) => {
 
   // Pegamos o link público do arquivo
   const { data: publicUrl } = supabase.storage
-    .from('reports_files')
+    .from('report_files')
     .getPublicUrl(filePath);
 
   return publicUrl.publicUrl;
