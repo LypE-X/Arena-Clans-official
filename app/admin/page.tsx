@@ -75,8 +75,70 @@ export default function AdminPage() {
                             <img src={report.file_url} alt="evidência" width={200} />
                         </a>
                     )}
+
+                    <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+                        <button onClick={() => sendMessageToAuthor(report)}>
+                            Msg Reportador
+                        </button>
+
+                        <button onClick={() => sendMessageToTarget(report)}>
+                            Msg Denunciado
+                        </button>
+
+                        <button onClick={() => deleteReport(report.id)}>
+                            🗑️ Deletar
+                        </button>
+                    </div>
                 </div>
             ))}
         </div>
     );
 }
+
+const sendMessageToAuthor = async (report: Report) => {
+    const message = prompt('Mensagem para quem reportou:');
+
+    if (!message) return;
+
+    await fetch('/api/admin/send-message', {
+        method: 'POST',
+        body: JSON.stringify({
+            team_id: report.author_team_id,
+            message,
+        }),
+    });
+
+    alert('Mensagem enviada!');
+};
+
+const sendMessageToTarget = async (report: Report) => {
+    const message = prompt('Mensagem para o time denunciado:');
+
+    if (!message) return;
+
+    await fetch('/api/admin/send-message', {
+        method: 'POST',
+        body: JSON.stringify({
+            team_id: report.target_team_id,
+            message,
+        }),
+    });
+
+    alert('Mensagem enviada!');
+};
+
+const deleteReport = async (reportId: string) => {
+    const confirmDelete = confirm('Tem certeza que quer apagar?');
+
+    if (!confirmDelete) return;
+
+    await fetch('/api/admin/delete-report', {
+        method: 'POST',
+        body: JSON.stringify({
+            report_id: reportId,
+        }),
+    });
+
+    alert('Report deletado!');
+    window.location.reload(); // simples por enquanto
+};

@@ -10,6 +10,7 @@ import Navbar from './Navbar';
 import ChatModal from '../modals/ChatModal';
 import WelcomeModal from '../modals/WelcomeModal';
 import { supabase } from '../../services/supabaseClient';
+import NotificationModal from '../modals/NotificationModal';
 
 type AppContextValue = {
   user: User | null;
@@ -41,6 +42,7 @@ export default function AppShell({ children }: AppShellProps) {
   const [notificationVersion, setNotificationVersion] = useState(0);
 
   const [chatTarget, setChatTarget] = useState<string | null>(null);
+  const [activeNotification, setActiveNotification] = useState<any>(null);
 
   const router = useRouter();
 
@@ -72,6 +74,71 @@ export default function AppShell({ children }: AppShellProps) {
       }
     }
   };
+
+  const handleCloseNotification = async () => {
+    if (activeNotification) {
+      await supabase
+        .from('notifications')
+        .update({ read: true })
+        .eq('id', activeNotification.id);
+    }
+
+    setActiveNotification(null);
+  };
+
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    // 1. FUNÇÃO PARA BUSCAR NOTIFICAÇÕES NÃO LIDAS (O que já está no banco)
+    const loadUnreadNotification = async () => {
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user.uid)
+        .eq('read', false)
+        .order('timestamp', { ascending: false })
+        .limit(1)
+        .maybeSingle(); // Pega apenas uma ou null
+
+      if (error) {
+        // Isso vai forçar o erro a aparecer no console como texto
+        console.error('ERRO SUPABASE:', JSON.stringify(error, null, 2));
+        return;
+      }
+
+      if (error) {
+        console.error('Erro ao buscar notificações:', error);
+      } else if (data) {
+        console.log('NOTIF ANTIGA ENCONTRADA:', data);
+        setActiveNotification(data);
+      }
+    };
+
+    // Executa a busca inicial
+    loadUnreadNotification();
+
+    // 2. CONFIGURA O REALTIME (Para o que chegar de agora em diante)
+    const channel = supabase
+      .channel(`user-notifs-${user.uid}`) // Canal único por usuário
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.uid}`, // Filtra no banco (mais seguro e performático)
+        },
+        (payload) => {
+          console.log('NOVA NOTIFICAÇÃO REALTIME:', payload.new);
+          setActiveNotification(payload.new);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.uid]); // Dependência específica no UID para evitar loops
 
   // 1️⃣ carregar sessão inicial
   useEffect(() => {
@@ -138,6 +205,14 @@ export default function AppShell({ children }: AppShellProps) {
         {/* ✅ Modal agora usa a função handleCloseWelcome para salvar no banco */}
         {showWelcome && (
           <WelcomeModal open={showWelcome} onClose={handleCloseWelcome} />
+        )}
+
+        {activeNotification && (
+          <NotificationModal
+            open={!!activeNotification}
+            notification={activeNotification}
+            onClose={handleCloseNotification}
+          />
         )}
 
         {showLogoutConfirm && (
