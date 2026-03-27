@@ -6,8 +6,10 @@ import { supabase } from '@/services/supabaseClient';
 type Report = {
     id: string;
     comment: string;
-    file_url: string;
+    file_url?: string | null;
     created_at: string;
+    author_team_id: string;
+    target_team_id: string;
 };
 
 export default function AdminPage() {
@@ -61,11 +63,17 @@ export default function AdminPage() {
 
             {reports.map((report) => (
                 <div key={report.id} style={{ border: '1px solid gray', marginBottom: 10, padding: 10 }}>
+
+                    <p><strong>Time que reportou:</strong> {report.author_team_id}</p>
+                    <p><strong>Time reportado:</strong> {report.target_team_id}</p>
+
                     <p><strong>Comentário:</strong> {report.comment}</p>
                     <p><strong>Data:</strong> {report.created_at}</p>
 
                     {report.file_url && (
-                        <img src={report.file_url} alt="evidência" width={200} />
+                        <a href={report.file_url} target="_blank">
+                            <img src={report.file_url} alt="evidência" width={200} />
+                        </a>
                     )}
                 </div>
             ))}
