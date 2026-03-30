@@ -504,18 +504,17 @@ export const markMessageNotificationsFromTeamRead = async (
   userId: string,
   fromTeamId: string
 ) => {
-
   const { error } = await supabase
     .from("notifications")
     .update({ read: true })
     .eq("user_id", userId)
-    .eq("related_team_id", fromTeamId)
     .eq("type", "message")
-    .eq("read", false);
+    .eq("related_team_id", fromTeamId);
 
-  if (error) console.error(error);
+  if (error) {
+    console.error("Erro ao marcar notificações como lidas:", error.message);
+  }
 };
-
 // =============================
 // REPORTS
 // =============================

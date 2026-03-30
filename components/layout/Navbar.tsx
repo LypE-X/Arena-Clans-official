@@ -9,6 +9,7 @@ import { Icons } from '../ui/Icons';
 const Navbar = ({
   user,
   onOpenChat,
+  notificationVersion,
   onRequestLogout
 }: {
   user: User | null;
@@ -76,6 +77,7 @@ const Navbar = ({
             <NotificationMenu
               userId={user.uid}
               onOpenChat={onOpenChat}
+              version={notificationVersion}
             />
 
             <div className="w-px h-6 bg-dark-800 mx-2"></div>

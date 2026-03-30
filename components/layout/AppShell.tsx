@@ -157,9 +157,13 @@ export default function AppShell({ children }: AppShellProps) {
   const openChat = async (teamId: string) => {
     if (!user || !user.teamId) return;
 
-    await db.markConversationRead(user.teamId, teamId);
-    await db.markMessageNotificationsFromTeamRead(user.uid, teamId);
+    // 1. Esperamos as duas atualizações no banco terminarem
+    await Promise.all([
+      db.markConversationRead(user.teamId, teamId),
+      db.markMessageNotificationsFromTeamRead(user.uid, teamId)
+    ]);
 
+    // 2. SÓ DEPOIS aumentamos a versão para o sino dar o "refresh"
     setNotificationVersion((v) => v + 1);
     setChatTarget(teamId);
   };

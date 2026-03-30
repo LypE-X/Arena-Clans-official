@@ -10,10 +10,12 @@ import { markNotificationAsReadAction } from "@/services/actions";
 // Adicione onOpenChat nas Props
 export default function NotificationMenu({
     userId,
-    onOpenChat
+    onOpenChat,
+    version  // 👈 1. Adicione essa palavra aqui
 }: {
     userId: string;
-    onOpenChat: (teamId: string) => void
+    onOpenChat: (teamId: string) => void;
+    version: number; // 👈 2. Adicione esse tipo aqui
 }) {
     const [notifications, setNotifications] = useState<any[]>([]);
     const [isOpen, setIsOpen] = useState(false);
@@ -29,6 +31,8 @@ export default function NotificationMenu({
 
         const channel = supabase
             .channel('realtime-notifications')
+
+            // 🔥 NOVA NOTIFICAÇÃO
             .on('postgres_changes', {
                 event: 'INSERT',
                 schema: 'public',
@@ -37,10 +41,25 @@ export default function NotificationMenu({
             }, (payload) => {
                 setNotifications(prev => [payload.new, ...prev]);
             })
+
+            // 🔥 ATUALIZAÇÃO (marcar como lida)
+            .on('postgres_changes', {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'notifications',
+                filter: `user_id=eq.${userId}`
+            }, (payload) => {
+                setNotifications(prev =>
+                    prev.map(n =>
+                        n.id === payload.new.id ? payload.new : n
+                    )
+                );
+            })
+
             .subscribe();
 
         return () => { supabase.removeChannel(channel); };
-    }, [userId]);
+    }, [userId, version]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {

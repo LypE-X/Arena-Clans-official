@@ -114,6 +114,20 @@ const ChatModal = ({
     }, 100);
   }, [open]);
 
+  useEffect(() => {
+    if (!open || !userId || !teamId) return;
+
+    const cleanUp = async () => {
+      // 🔥 Espera o banco marcar como lido
+      await db.markMessageNotificationsFromTeamRead(userId, teamId);
+
+      // 🔄 SÓ AGORA avisa o sino para atualizar
+      refreshNotifications();
+    };
+
+    cleanUp();
+  }, [open, teamId, userId]);
+
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!text.trim()) return;
