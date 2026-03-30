@@ -22,7 +22,7 @@ export const createReviewNotificationAction = async (teamId: string) => {
     .from("notifications")
     .select("id")
     .eq("user_id", user.uid)
-    .eq("type", "success") // 'success' é o seu tipo para avaliações
+    .eq("type", "system") // 'success' é o seu tipo para avaliações
     .maybeSingle();
 
   if (existing) {
@@ -40,7 +40,7 @@ export const createReviewNotificationAction = async (teamId: string) => {
     // 4. SE NÃO EXISTE: Cria a primeira
     await adminClient.from("notifications").insert({
       user_id: user.uid,
-      type: "success",
+      type: "system",
       related_team_id: teamId,
       title: "Nova avaliação",
       message: "Seu time recebeu uma nova avaliação",

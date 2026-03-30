@@ -73,7 +73,12 @@ export default function NotificationMenu({
 
         if (n.type === 'message' && n.related_team_id) {
             onOpenChat(n.related_team_id);
-        } else {
+
+        } else if (n.type === 'moderation') {
+            // 🔥 não redireciona (modal já abre pelo AppShell)
+            return;
+
+        } else if (n.type === 'system') {
             router.push('/my-team');
         }
     };
@@ -106,10 +111,22 @@ export default function NotificationMenu({
                                 className={`p-4 border-b border-white/5 flex gap-3 hover:bg-white/10 cursor-pointer transition ${!n.read ? 'bg-[#21ff21]/5' : ''}`}
                             >
                                 <div className="mt-1 flex-shrink-0">
-                                    {n.type === 'message' ? (
-                                        <div className="text-blue-400"><Icons.Message /></div>
-                                    ) : (
-                                        <div className="text-yellow-400"><Icons.Star fill={true} /></div>
+                                    {n.type === 'message' && (
+                                        <div className="text-blue-400">
+                                            <Icons.Message />
+                                        </div>
+                                    )}
+
+                                    {n.type === 'moderation' && (
+                                        <div className="text-red-400">
+                                            <Icons.Shield />
+                                        </div>
+                                    )}
+
+                                    {n.type === 'system' && (
+                                        <div className="text-yellow-400">
+                                            <Icons.Star fill={true} />
+                                        </div>
                                     )}
                                 </div>
                                 <div className="flex-1 min-w-0 text-left">

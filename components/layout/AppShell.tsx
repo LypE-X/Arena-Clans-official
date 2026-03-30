@@ -96,6 +96,7 @@ export default function AppShell({ children }: AppShellProps) {
         .select('*')
         .eq('user_id', user.uid)
         .eq('read', false)
+        .eq('type', 'moderation')
         .order('timestamp', { ascending: false })
         .limit(1)
         .maybeSingle(); // Pega apenas uma ou null
@@ -130,7 +131,9 @@ export default function AppShell({ children }: AppShellProps) {
         },
         (payload) => {
           console.log('NOVA NOTIFICAÇÃO REALTIME:', payload.new);
-          setActiveNotification(payload.new);
+          if (payload.new.type === 'moderation') {
+            setActiveNotification(payload.new);
+          }
         }
       )
       .subscribe();

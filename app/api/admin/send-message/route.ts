@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     const { error } = await supabase.from('notifications').insert({
         user_id: user.uid,
         related_team_id: team_id,
-        type: 'message',
+        type: 'moderation',
         title: 'Mensagem da moderação',
         message,
         read: false,
