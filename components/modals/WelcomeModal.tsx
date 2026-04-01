@@ -8,7 +8,7 @@ const WelcomeModal = ({ open, onClose }: any) => {
       <div className="bg-dark-900 border border-[#21ff21]/40 rounded-2xl shadow-[0_0_25px_#21ff21]/20 p-8 max-w-md w-full text-center">
         {/* Logo */}
         <img
-          src="https://i.imgur.com/N2ONXvq.png"
+          src="/logo.png"
           alt="Arena Clans Logo"
           className="w-20 h-20 mx-auto mb-4 object-contain drop-shadow-[0_0_10px_#21ff21]"
         />
@@ -29,6 +29,12 @@ const WelcomeModal = ({ open, onClose }: any) => {
           <br />
           <br />
           Mantenha o respeito, jogue com seriedade e aproveite a experiência.
+        </p>
+
+        {/* Linha em letras miúdas */}
+        <p className="text-gray-500 text-xs mt-2 italic">
+          A plataforma ainda está em desenvolvimento - Qualquer dúvida ou sugestão enviar para o e-mail:
+          <span className="ml-1 text-gray-400">contato.arenaclans@gmail.com</span>
         </p>
 
         {/* Botão */}
