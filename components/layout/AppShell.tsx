@@ -200,15 +200,25 @@ export default function AppShell({ children }: AppShellProps) {
         {children}
 
         <footer className="w-full text-center text-xs text-gray-500 py-6 border-t border-gray-800">
-          <Link href="/terms" className="hover:underline">
-            Termos de Uso
-          </Link>{' '}
-          •{' '}
-          <Link href="/privacy" className="hover:underline">
-            Política de Privacidade
-          </Link>
+          <div className="space-x-2">
+            <Link href="/terms" className="hover:underline">
+              Termos de Uso
+            </Link>
+            <span>•</span>
+            <Link href="/privacy" className="hover:underline">
+              Política de Privacidade
+            </Link>
+          </div>
 
-          <p className="mt-2 text-[10px] text-gray-600">
+          {/* 👇 Fale conosco */}
+          <p className="mt-3 text-[11px] text-gray-400">
+            Fale conosco:{' '}
+            <a href="mailto:contato.arenaclans@gmail.com" className="text-[#21ff21] hover:underline">
+              contato.arenaclans@gmail.com
+            </a>
+          </p>
+
+          <p className="mt-2 text-[11px] text-gray-500">
             Arena Clans © 2026
           </p>
         </footer>
