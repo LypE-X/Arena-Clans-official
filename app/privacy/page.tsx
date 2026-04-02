@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function PrivacyPage() {
     return (
         <main className="max-w-4xl mx-auto py-12 px-6 text-slate-300 font-sans">
@@ -17,6 +19,7 @@ export default function PrivacyPage() {
                     <p>Você pode solicitar a exportação ou exclusão definitiva de seus dados a qualquer momento através das configurações de perfil.</p>
                 </div>
             </section>
+            <Link href="/" className="mt-8 inline-block text-blue-400 hover:underline">Voltar ao Início</Link>
         </main>
     );
 }
