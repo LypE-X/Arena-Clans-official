@@ -44,7 +44,7 @@ const AuthPage = () => {
         const user = await db.loginUser(formData.email, formData.password);
         setUser(user);
 
-        await db.saveUserConsent({
+        db.saveUserConsent({
           userId: user.uid,
           acceptedTerms: true,
           acceptedPrivacy: true,
