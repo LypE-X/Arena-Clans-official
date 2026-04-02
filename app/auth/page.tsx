@@ -156,6 +156,39 @@ const AuthPage = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'register' && (
               <>
+                <div className="text-sm text-gray-400 space-y-2">
+                  <label className="flex items-start gap-2">
+                    <input
+                      type="checkbox"
+                      checked={consents.terms}
+                      onChange={(e) =>
+                        setConsents({ ...consents, terms: e.target.checked })
+                      }
+                    />
+                    <span>
+                      Eu aceito os{' '}
+                      <Link href="/terms" className="text-[#21ff21] underline">
+                        Termos de Uso
+                      </Link>
+                    </span>
+                  </label>
+
+                  <label className="flex items-start gap-2">
+                    <input
+                      type="checkbox"
+                      checked={consents.privacy}
+                      onChange={(e) =>
+                        setConsents({ ...consents, privacy: e.target.checked })
+                      }
+                    />
+                    <span>
+                      Eu aceito a{' '}
+                      <Link href="/privacy" className="text-[#21ff21] underline">
+                        Política de Privacidade
+                      </Link>
+                    </span>
+                  </label>
+                </div>
                 <Input
                   label="Nome Completo"
                   placeholder="Seu nome real"
@@ -177,6 +210,8 @@ const AuthPage = () => {
                   required
                 />
               </>
+
+
             )}
             <Input
               label="E-mail"
@@ -194,40 +229,6 @@ const AuthPage = () => {
               onChange={(e: any) => setFormData({ ...formData, password: e.target.value })}
               required
             />
-
-            <div className="text-sm text-gray-400 space-y-2">
-              <label className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  checked={consents.terms}
-                  onChange={(e) =>
-                    setConsents({ ...consents, terms: e.target.checked })
-                  }
-                />
-                <span>
-                  Eu aceito os{' '}
-                  <Link href="/terms" className="text-[#21ff21] underline">
-                    Termos de Uso
-                  </Link>
-                </span>
-              </label>
-
-              <label className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  checked={consents.privacy}
-                  onChange={(e) =>
-                    setConsents({ ...consents, privacy: e.target.checked })
-                  }
-                />
-                <span>
-                  Eu aceito a{' '}
-                  <Link href="/privacy" className="text-[#21ff21] underline">
-                    Política de Privacidade
-                  </Link>
-                </span>
-              </label>
-            </div>
 
             <Button
               type="submit"
@@ -257,6 +258,16 @@ const AuthPage = () => {
           )}
         </div>
       </Card>
+
+      <div className="text-xs text-gray-500 text-center">
+        <Link href="/terms" className="hover:underline">
+          Termos de Uso
+        </Link>{' '}
+        •{' '}
+        <Link href="/privacy" className="hover:underline">
+          Política de Privacidade
+        </Link>
+      </div>
 
       <div className="mt-16 flex flex-col items-center gap-4 animate-pulse duration-[5000ms]">
         <div className="flex flex-col items-center group">
