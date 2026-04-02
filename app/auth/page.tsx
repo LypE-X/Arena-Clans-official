@@ -259,16 +259,6 @@ const AuthPage = () => {
         </div>
       </Card>
 
-      <div className="text-xs text-gray-500 text-center">
-        <Link href="/terms" className="hover:underline">
-          Termos de Uso
-        </Link>{' '}
-        •{' '}
-        <Link href="/privacy" className="hover:underline">
-          Política de Privacidade
-        </Link>
-      </div>
-
       <div className="mt-16 flex flex-col items-center gap-4 animate-pulse duration-[5000ms]">
         <div className="flex flex-col items-center group">
           {/* Texto de suporte maior e com espaçamento elegante */}

@@ -11,6 +11,7 @@ import ChatModal from '../modals/ChatModal';
 import WelcomeModal from '../modals/WelcomeModal';
 import { supabase } from '../../services/supabaseClient';
 import NotificationModal from '../modals/NotificationModal';
+import Link from 'next/link';
 
 type AppContextValue = {
   user: User | null;
@@ -197,6 +198,20 @@ export default function AppShell({ children }: AppShellProps) {
         />
 
         {children}
+
+        <footer className="w-full text-center text-xs text-gray-500 py-6 border-t border-gray-800">
+          <Link href="/terms" className="hover:underline">
+            Termos de Uso
+          </Link>{' '}
+          •{' '}
+          <Link href="/privacy" className="hover:underline">
+            Política de Privacidade
+          </Link>
+
+          <p className="mt-2 text-[10px] text-gray-600">
+            Arena Clans © 2026
+          </p>
+        </footer>
 
         {user?.teamId && chatTarget && (
           <ChatModal
