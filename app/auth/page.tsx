@@ -26,6 +26,10 @@ const AuthPage = () => {
     phone: '',
     state: '',
   });
+  const [consents, setConsents] = useState({
+    terms: false,
+    privacy: false,
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -39,6 +43,15 @@ const AuthPage = () => {
       if (mode === 'login') {
         const user = await db.loginUser(formData.email, formData.password);
         setUser(user);
+
+        await db.saveUserConsent({
+          userId: user.uid,
+          acceptedTerms: true,
+          acceptedPrivacy: true,
+          termsVersion: 'v1.0',
+          privacyVersion: 'v1.0',
+        });
+
         router.push('/');
       } else {
         if (!formData.name || !formData.phone) {
@@ -47,8 +60,15 @@ const AuthPage = () => {
         if (formData.name.length > 50) {
           throw new Error('Nome deve ter no máximo 50 caracteres.');
         }
+        if (!consents.terms || !consents.privacy) {
+          throw new Error('Você precisa aceitar os termos e a política de privacidade.');
+        }
 
-        await db.registerUser(formData);
+        const authUser = await db.registerUser(formData);
+
+        if (!authUser?.id) {
+          throw new Error('Erro ao criar usuário.');
+        }
 
         setSuccess("Cadastro realizado! Enviamos um link de confirmação para o seu e-mail.");
         setError('');
@@ -83,7 +103,7 @@ const AuthPage = () => {
         <span className="absolute top-1/2 right-1/2 h-0.5 w-0.5 rotate-[-45deg] animate-meteor-reverse [animation-delay:-3s] rounded-[9999px] bg-[#21ff21] shadow-[0_0_20px_10px_#21ff21] before:absolute before:top-1/2 before:w-[150px] before:h-[1px] before:-translate-y-[50%] before:bg-gradient-to-r before:from-[#21ff21] before:to-transparent"></span>
 
         {/* Delay de -4.5s garante que ele não fique travado no topo */}
-        
+
 
         {/* Aura fixa pulsante */}
         <div className="absolute w-40 h-40 rounded-full bg-[#21ff21]/20 blur-3xl animate-pulse duration-[4000ms]"></div>
@@ -174,6 +194,40 @@ const AuthPage = () => {
               onChange={(e: any) => setFormData({ ...formData, password: e.target.value })}
               required
             />
+
+            <div className="text-sm text-gray-400 space-y-2">
+              <label className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  checked={consents.terms}
+                  onChange={(e) =>
+                    setConsents({ ...consents, terms: e.target.checked })
+                  }
+                />
+                <span>
+                  Eu aceito os{' '}
+                  <Link href="/terms" className="text-[#21ff21] underline">
+                    Termos de Uso
+                  </Link>
+                </span>
+              </label>
+
+              <label className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  checked={consents.privacy}
+                  onChange={(e) =>
+                    setConsents({ ...consents, privacy: e.target.checked })
+                  }
+                />
+                <span>
+                  Eu aceito a{' '}
+                  <Link href="/privacy" className="text-[#21ff21] underline">
+                    Política de Privacidade
+                  </Link>
+                </span>
+              </label>
+            </div>
 
             <Button
               type="submit"

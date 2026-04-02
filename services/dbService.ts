@@ -1,7 +1,10 @@
 // <--- Isso diz ao Next.js: "Rode tudo aqui no servidor"
-import { User, Team, Review, TeamMessage } from "../types";
+import { User as AppUser, Team, Review, TeamMessage } from "../types";
+import { User as SupabaseUser } from "@supabase/supabase-js";
 import { supabase } from "./supabaseClient";
 import { createClient } from "@supabase/supabase-js"
+
+type AuthUser = SupabaseUser;
 
 
 
@@ -10,7 +13,7 @@ import { createClient } from "@supabase/supabase-js"
 // AUTH
 // =============================
 
-export const loginUser = async (email: string, password: string): Promise<User> => {
+export const loginUser = async (email: string, password: string): Promise<AppUser> => {
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -46,22 +49,21 @@ export const loginUser = async (email: string, password: string): Promise<User> 
 };
 
 
-export const registerUser = async (data: any): Promise<void> => {
-  const { error } = await supabase.auth.signUp({
-    email: data.email,
-    password: data.password,
+export const registerUser = async (formData: any): Promise<SupabaseUser | null> => {
+  const { data, error } = await supabase.auth.signUp({
+    email: formData.email,
+    password: formData.password,
     options: {
-      // 💡 Os dados dentro de 'data' vão para o 'raw_user_meta_data' que a Trigger lê
       data: {
-        name: data.name,
-        phone: data.phone
+        name: formData.name,
+        phone: formData.phone
       }
     }
   });
 
   if (error) throw new Error(error.message);
 
-  // ✅ Removido o código de upsert manual! O banco cuida disso agora.
+  return data.user;
 };
 
 
@@ -70,7 +72,7 @@ export const logoutUser = async () => {
 };
 
 
-export const getCurrentUser = async (): Promise<User | null> => {
+export const getCurrentUser = async (): Promise<AppUser | null> => {
 
   const { data } = await supabase.auth.getUser();
 
@@ -101,7 +103,7 @@ export const getCurrentUser = async (): Promise<User | null> => {
 // TEAMS
 // =============================
 
-export const createTeam = async (user: User, data: Partial<Team>): Promise<Team> => {
+export const createTeam = async (user: AppUser, data: Partial<Team>): Promise<Team> => {
   const { data: team, error } = await supabase
     .from("teams")
     .insert({
@@ -653,6 +655,24 @@ export const updateAccount = async (uid: string, data: any) => {
     .eq('uid', uid);
 
   if (dbError) throw dbError;
+};
+
+export const saveUserConsent = async (data: any) => {
+  const { error } = await supabase
+    .from('user_consents')
+    .upsert(
+      {
+        user_id: data.userId,
+        accepted_terms: data.acceptedTerms,
+        accepted_privacy: data.acceptedPrivacy,
+        terms_version: data.termsVersion,
+        privacy_version: data.privacyVersion,
+        accepted_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id' } // 👈 evita duplicar
+    );
+
+  if (error) throw error;
 };
 
 
