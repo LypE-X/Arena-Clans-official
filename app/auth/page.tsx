@@ -230,6 +230,15 @@ const AuthPage = () => {
               required
             />
 
+            <div className="text-right text-sm mb-2">
+              <Link
+                href="/forgot-password"
+                className="text-[#21ff21] hover:underline"
+              >
+                Esqueci minha senha
+              </Link>
+            </div>
+
             <Button
               type="submit"
               className="w-full !bg-[#21ff21] hover:!bg-[#16cc16] !text-black !shadow-[#21ff21]/50 !border-none"
