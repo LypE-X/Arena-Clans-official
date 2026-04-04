@@ -156,39 +156,7 @@ const AuthPage = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'register' && (
               <>
-                <div className="text-sm text-gray-400 space-y-2">
-                  <label className="flex items-start gap-2">
-                    <input
-                      type="checkbox"
-                      checked={consents.terms}
-                      onChange={(e) =>
-                        setConsents({ ...consents, terms: e.target.checked })
-                      }
-                    />
-                    <span>
-                      Eu aceito os{' '}
-                      <Link href="/terms" className="text-[#21ff21] underline">
-                        Termos de Uso
-                      </Link>
-                    </span>
-                  </label>
 
-                  <label className="flex items-start gap-2">
-                    <input
-                      type="checkbox"
-                      checked={consents.privacy}
-                      onChange={(e) =>
-                        setConsents({ ...consents, privacy: e.target.checked })
-                      }
-                    />
-                    <span>
-                      Eu aceito a{' '}
-                      <Link href="/privacy" className="text-[#21ff21] underline">
-                        Política de Privacidade
-                      </Link>
-                    </span>
-                  </label>
-                </div>
                 <Input
                   label="Nome Completo"
                   placeholder="Seu nome real"
@@ -211,7 +179,6 @@ const AuthPage = () => {
                 />
               </>
 
-
             )}
             <Input
               label="E-mail"
@@ -229,7 +196,41 @@ const AuthPage = () => {
               onChange={(e: any) => setFormData({ ...formData, password: e.target.value })}
               required
             />
+            {mode === 'register' && (
+              <div className="text-sm text-gray-400 space-y-2">
+                <label className="flex items-start gap-2">
+                  <input
+                    type="checkbox"
+                    checked={consents.terms}
+                    onChange={(e) =>
+                      setConsents({ ...consents, terms: e.target.checked })
+                    }
+                  />
+                  <span>
+                    Eu aceito os{' '}
+                    <Link href="/terms" className="text-[#21ff21] underline">
+                      Termos de Uso
+                    </Link>
+                  </span>
+                </label>
 
+                <label className="flex items-start gap-2">
+                  <input
+                    type="checkbox"
+                    checked={consents.privacy}
+                    onChange={(e) =>
+                      setConsents({ ...consents, privacy: e.target.checked })
+                    }
+                  />
+                  <span>
+                    Eu aceito a{' '}
+                    <Link href="/privacy" className="text-[#21ff21] underline">
+                      Política de Privacidade
+                    </Link>
+                  </span>
+                </label>
+              </div>
+            )}
             {mode === 'login' && (
               <div className="text-right text-sm mb-2">
                 <Link
