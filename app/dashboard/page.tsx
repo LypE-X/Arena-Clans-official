@@ -14,8 +14,6 @@ import { useAppContext } from '../../components/layout/AppShell';
 import { getTeamImage } from '@/services/image'
 import SkeletonTeamCard from '@/components/ui/SkeletonTeamCard'
 
-export const revalidate = 0;
-
 const DashboardPage = () => {
   const { user, openChat } = useAppContext();
   const [teams, setTeams] = React.useState<any[]>([]);
