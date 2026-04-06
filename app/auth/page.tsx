@@ -11,6 +11,7 @@ import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import { useAppContext } from '../../components/layout/AppShell';
 import Image from "next/image"
+import { supabase } from '../../services/supabaseClient';
 
 const AuthPage = () => {
   const searchParams = useSearchParams();
@@ -64,6 +65,18 @@ const AuthPage = () => {
           throw new Error('Você precisa aceitar os termos e a política de privacidade.');
         }
 
+        // 🔍 AQUI entra a verificação
+        const { data: existingUser } = await supabase
+          .from('users')
+          .select('uid')
+          .eq('email', formData.email)
+          .maybeSingle();
+
+        if (existingUser) {
+          throw new Error("Email já cadastrado.");
+        }
+
+        // 🔐 continua fluxo normal
         const authUser = await db.registerUser(formData);
 
         if (!authUser?.id) {
@@ -72,7 +85,6 @@ const AuthPage = () => {
 
         setSuccess("Cadastro realizado! Enviamos um link de confirmação para o seu e-mail.");
         setError('');
-        // Mantemos o email no formData apenas para exibir na mensagem de sucesso, se desejar
       }
     } catch (err: any) {
       setError(err.message || 'Ocorreu um erro.');

@@ -50,6 +50,19 @@ export const loginUser = async (email: string, password: string): Promise<AppUse
 
 
 export const registerUser = async (formData: any): Promise<SupabaseUser | null> => {
+
+  // 🔍 1. verifica na tabela users
+  const { data: existingUser } = await supabase
+    .from('users')
+    .select('uid')
+    .eq('email', formData.email)
+    .maybeSingle();
+
+  if (existingUser) {
+    throw new Error("Email já cadastrado.");
+  }
+
+  // 🔐 2. tenta criar no auth
   const { data, error } = await supabase.auth.signUp({
     email: formData.email,
     password: formData.password,
@@ -61,7 +74,13 @@ export const registerUser = async (formData: any): Promise<SupabaseUser | null> 
     }
   });
 
-  if (error) throw new Error(error.message);
+  // 🧠 3. trata erro do supabase (ESSENCIAL)
+  if (error) {
+    if (error.message.includes("User already registered")) {
+      throw new Error("Email já cadastrado.");
+    }
+    throw new Error(error.message);
+  }
 
   return data.user;
 };
