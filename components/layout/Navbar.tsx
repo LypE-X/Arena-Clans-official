@@ -34,7 +34,7 @@ const Navbar = ({
               height={64}
               className="object-contain drop-shadow-[0_0_6px_#21ff21] transition-all duration-300 group-hover:drop-shadow-[0_0_12px_#21ff21]"
             />
-            <span className="font-bold text-xl tracking-tight text-white transition-colors duration-300 group-hover:text-[#21ff21]">
+            <span className="hidden sm:inline font-bold text-xl tracking-tight text-white transition-colors duration-300 group-hover:text-[#21ff21]">
               ARENA-<span className="text-[#21ff21]">CLANS</span>
             </span>
           </Link>
