@@ -36,19 +36,13 @@ const ChatModal = ({
     if (!open || !currentTeamId || !teamId) return;
 
     const loadMessages = async () => {
-
-      // ✅ 1. usa cache se já existir
       if (messagesCache[teamId]) {
         setMessages(messagesCache[teamId]);
-
-        // ainda precisa carregar o time
         const team = await db.getTeamById(teamId);
         setOtherTeam(team);
-
         return;
       }
 
-      // ✅ 2. busca tudo em paralelo
       const [msgs, team] = await Promise.all([
         db.getTeamMessages(currentTeamId, teamId),
         db.getTeamById(teamId)
@@ -57,7 +51,6 @@ const ChatModal = ({
       setMessages(msgs);
       setOtherTeam(team);
 
-      // ✅ 3. salva no cache
       setMessagesCache((prev) => ({
         ...prev,
         [teamId]: msgs
@@ -72,8 +65,10 @@ const ChatModal = ({
         event: 'INSERT',
         schema: 'public',
         table: 'team_messages'
-      }, async (payload: any) => {
+      }, async (payload: any) => { // 👈 Adicionado async aqui
         const newMsg = payload.new;
+
+        // Verifica se a mensagem pertence a esta conversa
         if (
           (newMsg.from_team_id === currentTeamId && newMsg.to_team_id === teamId) ||
           (newMsg.from_team_id === teamId && newMsg.to_team_id === currentTeamId)
@@ -90,6 +85,7 @@ const ChatModal = ({
             }
           ]);
 
+          // 🔥 SE A MENSAGEM VEIO DO OUTRO TIME, limpa a notificação na hora
           if (newMsg.from_team_id === teamId && userId) {
             await db.markMessageNotificationsFromTeamRead(userId, teamId);
             refreshNotifications(); // 🔄 Atualiza o sino imediatamente
