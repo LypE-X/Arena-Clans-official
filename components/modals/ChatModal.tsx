@@ -30,9 +30,17 @@ const ChatModal = ({
   const bottomRef = useRef<HTMLDivElement>(null);
   const [messagesCache, setMessagesCache] = useState<Record<string, any[]>>({});
 
+  const userIdRef = useRef(userId);
+  const refreshNotificationsRef = useRef(refreshNotifications);
+  const teamIdRef = useRef(teamId);
 
-  // Load team + messages
-  // 1️⃣ EFEITO: Carrega as mensagens iniciais (Roda apenas quando muda o Chat)
+  useEffect(() => {
+    userIdRef.current = userId;
+    refreshNotificationsRef.current = refreshNotifications;
+    teamIdRef.current = teamId;
+  }, [userId, refreshNotifications, teamId]);
+
+  // 1️⃣ EFEITO: Carrega as mensagens iniciais
   useEffect(() => {
     if (!open || !currentTeamId || !teamId) return;
 
@@ -59,15 +67,14 @@ const ChatModal = ({
     };
 
     loadMessages();
-  }, [open, currentTeamId, teamId]); // Mantido idêntico ao seu original funcional
+  }, [open, currentTeamId, teamId]);
 
-
-  // 2️⃣ EFEITO: Escuta o Supabase Realtime (Não reinicia com o sino)
+  // 2️⃣ EFEITO: Escuta o Supabase Realtime
   useEffect(() => {
     if (!open || !currentTeamId || !teamId) return;
 
     const channel = supabase
-      .channel(`chat-realtime-${teamId}`) // Canal único por sala evita conflitos
+      .channel(`chat-realtime-${teamId}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
@@ -91,14 +98,19 @@ const ChatModal = ({
             }
           ]);
 
-          // Executa a limpeza sem recriar o canal do Supabase
-          if (newMsg.from_team_id === teamId && userId) {
-            try {
-              await db.markMessageNotificationsFromTeamRead(userId, teamId);
-              refreshNotifications();
-            } catch (err) {
-              console.error("Erro ao limpar notificação realtime:", err);
-            }
+          if (newMsg.from_team_id === teamIdRef.current && userIdRef.current) {
+            const currentUserId = userIdRef.current;
+            const currentTeamIdRef = teamIdRef.current;
+            const triggerSino = refreshNotificationsRef.current;
+
+            setTimeout(async () => {
+              try {
+                await db.markMessageNotificationsFromTeamRead(currentUserId, currentTeamIdRef);
+                triggerSino();
+              } catch (err) {
+                console.error("Erro ao limpar notificação realtime:", err);
+              }
+            }, 1200);
           }
         }
       })
@@ -107,8 +119,6 @@ const ChatModal = ({
     return () => {
       supabase.removeChannel(channel);
     };
-    // 💡 REMOVIDOS do array: refreshNotifications e userId. 
-    // Eles causavam o recarregamento do canal e acionavam o bug do cache.
   }, [open, currentTeamId, teamId]);
 
   useEffect(() => {
