@@ -40,7 +40,10 @@ const ChatModal = ({
     teamIdRef.current = teamId;
   }, [userId, refreshNotifications, teamId]);
 
-  // 1️⃣ EFEITO: Carrega as mensagens iniciais
+
+
+  // Load team + messages
+  // 1️⃣ EFEITO: Carrega as mensagens iniciais (Roda apenas quando muda o Chat)
   useEffect(() => {
     if (!open || !currentTeamId || !teamId) return;
 
@@ -67,7 +70,8 @@ const ChatModal = ({
     };
 
     loadMessages();
-  }, [open, currentTeamId, teamId]);
+  }, [open, currentTeamId, teamId]); // Mantido idêntico ao seu original funcional
+
 
   // 2️⃣ EFEITO: Escuta o Supabase Realtime
   useEffect(() => {
