@@ -13,6 +13,7 @@ import { Icons } from '../../components/ui/Icons';
 import { useAppContext } from '../../components/layout/AppShell';
 import { getTeamImage } from '@/services/image'
 import SkeletonTeamCard from '@/components/ui/SkeletonTeamCard'
+import { createMessageNotificationAction } from '@/services/actions';
 
 const DashboardPage = () => {
   const { user, openChat } = useAppContext();
@@ -58,7 +59,12 @@ const DashboardPage = () => {
         'Disponível para um amistoso?',
         user.uid
       );
+      await createMessageNotificationAction(
+        user.teamId,
+        teamId
+      );
     }
+
     openChat(teamId);
   };
 
