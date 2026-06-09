@@ -32,6 +32,7 @@ const ChatModal = ({
 
 
   // Load team + messages
+  // 1️⃣ EFEITO: Carrega as mensagens iniciais (Roda apenas quando muda o Chat)
   useEffect(() => {
     if (!open || !currentTeamId || !teamId) return;
 
@@ -58,17 +59,22 @@ const ChatModal = ({
     };
 
     loadMessages();
+  }, [open, currentTeamId, teamId]); // Mantido idêntico ao seu original funcional
+
+
+  // 2️⃣ EFEITO: Escuta o Supabase Realtime (Não reinicia com o sino)
+  useEffect(() => {
+    if (!open || !currentTeamId || !teamId) return;
 
     const channel = supabase
-      .channel('chat-realtime')
+      .channel(`chat-realtime-${teamId}`) // Canal único por sala evita conflitos
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'team_messages'
-      }, async (payload: any) => { // 👈 Adicionado async aqui
+      }, async (payload: any) => {
         const newMsg = payload.new;
 
-        // Verifica se a mensagem pertence a esta conversa
         if (
           (newMsg.from_team_id === currentTeamId && newMsg.to_team_id === teamId) ||
           (newMsg.from_team_id === teamId && newMsg.to_team_id === currentTeamId)
@@ -85,10 +91,14 @@ const ChatModal = ({
             }
           ]);
 
-          // 🔥 SE A MENSAGEM VEIO DO OUTRO TIME, limpa a notificação na hora
+          // Executa a limpeza sem recriar o canal do Supabase
           if (newMsg.from_team_id === teamId && userId) {
-            await db.markMessageNotificationsFromTeamRead(userId, teamId);
-            refreshNotifications(); // 🔄 Atualiza o sino imediatamente
+            try {
+              await db.markMessageNotificationsFromTeamRead(userId, teamId);
+              refreshNotifications();
+            } catch (err) {
+              console.error("Erro ao limpar notificação realtime:", err);
+            }
           }
         }
       })
@@ -97,7 +107,9 @@ const ChatModal = ({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [open, currentTeamId, teamId, userId, refreshNotifications]);
+    // 💡 REMOVIDOS do array: refreshNotifications e userId. 
+    // Eles causavam o recarregamento do canal e acionavam o bug do cache.
+  }, [open, currentTeamId, teamId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({
