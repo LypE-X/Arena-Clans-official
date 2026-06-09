@@ -72,7 +72,7 @@ const ChatModal = ({
         event: 'INSERT',
         schema: 'public',
         table: 'team_messages'
-      }, (payload: any) => {
+      }, async (payload: any) => {
         const newMsg = payload.new;
         if (
           (newMsg.from_team_id === currentTeamId && newMsg.to_team_id === teamId) ||
@@ -89,6 +89,11 @@ const ChatModal = ({
               timestamp: new Date(newMsg.timestamp).getTime()
             }
           ]);
+
+          if (newMsg.from_team_id === teamId && userId) {
+            await db.markMessageNotificationsFromTeamRead(userId, teamId);
+            refreshNotifications(); // 🔄 Atualiza o sino imediatamente
+          }
         }
       })
       .subscribe();
@@ -96,7 +101,7 @@ const ChatModal = ({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [open, currentTeamId, teamId]);
+  }, [open, currentTeamId, teamId, userId, refreshNotifications]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({
